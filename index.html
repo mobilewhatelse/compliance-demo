@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,80 +27,80 @@ const { useState, useEffect, useRef } = React;
 /* ─── STATIC DEMO DATA ─────────────────────────────────────────── */
 
 const COMPONENTS = [
-  { id:'C-001', name:'Flasche',       material:'PET',              weight_g:28.5, recycled_pct:30, supplier:'GlobalPack GmbH',       supplier_id:'SUP-100', recyclability:'A', cert:'valid',   quality:88, status:'complete'   },
-  { id:'C-002', name:'Verschluss',    material:'HDPE',             weight_g:3.2,  recycled_pct:25, supplier:'GlobalPack GmbH',       supplier_id:'SUP-100', recyclability:'B', cert:'expired', quality:61, status:'incomplete' },
-  { id:'C-003', name:'Etikett',       material:'PET',              weight_g:1.8,  recycled_pct:0,  supplier:'LabelTech AG',          supplier_id:'SUP-200', recyclability:'B', cert:'missing', quality:45, status:'incomplete' },
-  { id:'C-004', name:'Schrumpffolie', material:'LDPE',             weight_g:8.2,  recycled_pct:15, supplier:'WrapCo International',  supplier_id:'SUP-300', recyclability:'C', cert:'missing', quality:38, status:'incomplete' },
-  { id:'C-005', name:'Transportbox',  material:'Wellpappe',        weight_g:185,  recycled_pct:85, supplier:'BoxWorks GmbH',         supplier_id:'SUP-400', recyclability:'A', cert:'valid',   quality:92, status:'complete'   },
+  { id:'C-001', name:'Bottle',        material:'PET',              weight_g:28.5, recycled_pct:30, supplier:'GlobalPack GmbH',       supplier_id:'SUP-100', recyclability:'A', cert:'valid',   quality:88, status:'complete'   },
+  { id:'C-002', name:'Closure',       material:'HDPE',             weight_g:3.2,  recycled_pct:25, supplier:'GlobalPack GmbH',       supplier_id:'SUP-100', recyclability:'B', cert:'expired', quality:61, status:'incomplete' },
+  { id:'C-003', name:'Label',         material:'PET',              weight_g:1.8,  recycled_pct:0,  supplier:'LabelTech AG',          supplier_id:'SUP-200', recyclability:'B', cert:'missing', quality:45, status:'incomplete' },
+  { id:'C-004', name:'Shrink film',   material:'LDPE',             weight_g:8.2,  recycled_pct:15, supplier:'WrapCo International',  supplier_id:'SUP-300', recyclability:'C', cert:'missing', quality:38, status:'incomplete' },
+  { id:'C-005', name:'Transport box', material:'Corrugated board', weight_g:185,  recycled_pct:85, supplier:'BoxWorks GmbH',         supplier_id:'SUP-400', recyclability:'A', cert:'valid',   quality:92, status:'complete'   },
 ];
 
 const DATAPOINTS = [
-  { id:'DP-01', name:'Verpackungs-ID',              ref:'PPWR Art. 5(1)',  source:'ERP',                  steward:'Supply Chain', quality:98, status:'complete',   evidence:'ERP-PKG-7781'   },
-  { id:'DP-02', name:'Verpackungsebene',            ref:'PPWR Art. 3(1)',  source:'PLM',                  steward:'R&D',          quality:95, status:'complete',   evidence:'PLM-BOM-2024'   },
-  { id:'DP-03', name:'Komponentenliste',            ref:'PPWR Anhang I',   source:'PLM',                  steward:'R&D',          quality:87, status:'complete',   evidence:'PLM-BOM-2024'   },
-  { id:'DP-04', name:'Materialtyp je Komponente',  ref:'PPWR Anhang IV',  source:'ERP + PLM + Lieferant',steward:'Data Steward', quality:62, status:'incomplete', evidence:null             },
-  { id:'DP-05', name:'Gewicht je Komponente',      ref:'PPWR Art. 7(2)',  source:'PLM',                  steward:'R&D',          quality:90, status:'complete',   evidence:'PLM-SPEC-2024'  },
-  { id:'DP-06', name:'Gesamtverpackungsgewicht',   ref:'PPWR Art. 7(1)',  source:'Berechnet',            steward:'Data Steward', quality:90, status:'complete',   evidence:null             },
-  { id:'DP-07', name:'Recyclinganteil',            ref:'PPWR Art. 7(3)',  source:'Excel',                steward:'Sustainability',quality:45, status:'incomplete', evidence:null             },
-  { id:'DP-08', name:'Recycelbarkeitsklasse',      ref:'PPWR Art. 6(1)',  source:'—',                    steward:'—',            quality:0,  status:'missing',    evidence:null             },
-  { id:'DP-09', name:'Lieferanten-Materialdeklaration',ref:'PPWR Art. 14',source:'Lieferantenportal',   steward:'Einkauf',      quality:55, status:'incomplete', evidence:null             },
-  { id:'DP-10', name:'Prüfberichte',               ref:'PPWR Art. 9',    source:'DMS',                  steward:'Qualität',     quality:85, status:'complete',   evidence:'DMS-TR-2024-04' },
-  { id:'DP-11', name:'QR / Datenträger-Link',      ref:'PPWR Art. 11',   source:'—',                    steward:'—',            quality:0,  status:'missing',    evidence:null             },
-  { id:'DP-12', name:'In-Verkehr-Bracht-Mengen',   ref:'PPWR Art. 16',   source:'ERP',                  steward:'Supply Chain', quality:92, status:'complete',   evidence:'ERP-SAL-2024'   },
-  { id:'DP-13', name:'Konformitätserklärung',      ref:'PPWR Art. 13',   source:'—',                    steward:'—',            quality:0,  status:'missing',    evidence:null             },
-  { id:'DP-14', name:'EPR-Berichtsmapping',        ref:'PPWR Art. 45',   source:'Excel',                steward:'Sustainability',quality:40, status:'incomplete', evidence:null             },
+  { id:'DP-01', name:'Packaging ID',                  ref:'PPWR Art. 5(1)',   source:'ERP',                     steward:'Supply Chain',  quality:98, status:'complete',   evidence:'ERP-PKG-7781'   },
+  { id:'DP-02', name:'Packaging level',               ref:'PPWR Art. 3(1)',   source:'PLM',                     steward:'R&D',           quality:95, status:'complete',   evidence:'PLM-BOM-2024'   },
+  { id:'DP-03', name:'Component list',                ref:'PPWR Annex I',     source:'PLM',                     steward:'R&D',           quality:87, status:'complete',   evidence:'PLM-BOM-2024'   },
+  { id:'DP-04', name:'Material type per component',   ref:'PPWR Annex IV',    source:'ERP + PLM + Supplier',    steward:'Data Steward',  quality:62, status:'incomplete', evidence:null             },
+  { id:'DP-05', name:'Weight per component',          ref:'PPWR Art. 7(2)',   source:'PLM',                     steward:'R&D',           quality:90, status:'complete',   evidence:'PLM-SPEC-2024'  },
+  { id:'DP-06', name:'Total packaging weight',        ref:'PPWR Art. 7(1)',   source:'Calculated',              steward:'Data Steward',  quality:90, status:'complete',   evidence:null             },
+  { id:'DP-07', name:'Recycled content',              ref:'PPWR Art. 7(3)',   source:'Excel',                   steward:'Sustainability',quality:45, status:'incomplete', evidence:null             },
+  { id:'DP-08', name:'Recyclability class',           ref:'PPWR Art. 6(1)',   source:'—',                       steward:'—',             quality:0,  status:'missing',    evidence:null             },
+  { id:'DP-09', name:'Supplier material declaration', ref:'PPWR Art. 14',     source:'Supplier portal',         steward:'Procurement',   quality:55, status:'incomplete', evidence:null             },
+  { id:'DP-10', name:'Test reports',                  ref:'PPWR Art. 9',      source:'DMS',                     steward:'Quality',       quality:85, status:'complete',   evidence:'DMS-TR-2024-04' },
+  { id:'DP-11', name:'QR / data carrier link',        ref:'PPWR Art. 11',     source:'—',                       steward:'—',             quality:0,  status:'missing',    evidence:null             },
+  { id:'DP-12', name:'Placed-on-market volumes',      ref:'PPWR Art. 16',     source:'ERP',                     steward:'Supply Chain',  quality:92, status:'complete',   evidence:'ERP-SAL-2024'   },
+  { id:'DP-13', name:'Declaration of conformity',     ref:'PPWR Art. 13',     source:'—',                       steward:'—',             quality:0,  status:'missing',    evidence:null             },
+  { id:'DP-14', name:'EPR reporting mapping',         ref:'PPWR Art. 45',     source:'Excel',                   steward:'Sustainability',quality:40, status:'incomplete', evidence:null             },
 ];
 
 const ETL_STEPS = [
-  { id:'extract',   label:'Extract',    emoji:'⬇️',  desc:'Rohdaten aus Quellsystemen' },
-  { id:'profile',   label:'Profile',    emoji:'🔍',  desc:'Qualitätsanalyse & Statistik' },
-  { id:'cleanse',   label:'Cleanse',    emoji:'🧹',  desc:'Duplikate & Fehler bereinigen' },
-  { id:'harmonise', label:'Harmonise',  emoji:'🔄',  desc:'Formate & Einheiten vereinheitlichen' },
-  { id:'match',     label:'Match',      emoji:'🔗',  desc:'Cross-Quellen Entity-Resolution' },
-  { id:'validate',  label:'Validate',   emoji:'✓',   desc:'PPWR-Regelprüfung' },
-  { id:'publish',   label:'Publish',    emoji:'📤',  desc:'An osapiens Hub senden' },
+  { id:'extract',   label:'Extract',    emoji:'⬇️',  desc:'Raw data from source systems' },
+  { id:'profile',   label:'Profile',    emoji:'🔍',  desc:'Quality analysis & statistics' },
+  { id:'cleanse',   label:'Cleanse',    emoji:'🧹',  desc:'Clean duplicates & errors' },
+  { id:'harmonise', label:'Harmonise',  emoji:'🔄',  desc:'Standardise formats & units' },
+  { id:'match',     label:'Match',      emoji:'🔗',  desc:'Cross-source entity resolution' },
+  { id:'validate',  label:'Validate',   emoji:'✓',   desc:'PPWR rule checks' },
+  { id:'publish',   label:'Publish',    emoji:'📤',  desc:'Send to osapiens Hub' },
 ];
 
 const ETL_DATA = {
   extract: {
-    cols: ['Quellsystem','Feld','Rohwert','Hinweis'],
+    cols: ['Source system','Field','Raw value','Note'],
     rows: [
-      ['ERP',          'material_code', 'HD PE',                     '3 Varianten gefunden'],
-      ['PLM',          'material_name', 'High Density Polyethylene', 'Vollname'],
-      ['Lieferantendatei','material',   'PE-HD',                     'EN-Normbezeichnung'],
-      ['Packaging DB', 'mat_desc',      'Polyethylene high density', 'Legacy-Beschreibung'],
+      ['ERP',          'material_code', 'HD PE',                     '3 variants found'],
+      ['PLM',          'material_name', 'High Density Polyethylene', 'Full name'],
+      ['Supplier file','material',      'PE-HD',                     'EN standard designation'],
+      ['Packaging DB', 'mat_desc',      'Polyethylene high density', 'Legacy description'],
     ]
   },
   profile: {
-    cols: ['Feld','Vollständigkeit','Distinct','Probleme'],
+    cols: ['Field','Completeness','Distinct','Issues'],
     rows: [
-      ['material_type',      '62%', '8',  'Inkonsistente Benennung über Systeme'],
-      ['recycled_content',   '45%', '12', 'Fehlt für 3 Komponenten'],
-      ['weight_g',           '90%', '5',  'Einheitskonflikt (kg vs. g)'],
-      ['recyclability_grade','0%',  '0',  'In keinem System verfügbar'],
+      ['material_type',      '62%', '8',  'Inconsistent naming across systems'],
+      ['recycled_content',   '45%', '12', 'Missing for 3 components'],
+      ['weight_g',           '90%', '5',  'Unit conflict (kg vs. g)'],
+      ['recyclability_grade','0%',  '0',  'Not available in any system'],
     ]
   },
   cleanse: {
-    cols: ['Feld','Vorher','Nachher','Regel'],
+    cols: ['Field','Before','After','Rule'],
     rows: [
-      ['material',     'HD PE',             'HDPE',            'Material-Alias-Lookup'],
-      ['material',     'PE-HD',             'HDPE',            'Material-Alias-Lookup'],
-      ['supplier_name','GLOBALPACK GMBH',   'GlobalPack GmbH', 'Namens-Normalisierung'],
-      ['cert_date',    '31.3.2027',         '2027-03-31',      'ISO-8601-Datumsformat'],
+      ['material',     'HD PE',             'HDPE',            'Material alias lookup'],
+      ['material',     'PE-HD',             'HDPE',            'Material alias lookup'],
+      ['supplier_name','GLOBALPACK GMBH',   'GlobalPack GmbH', 'Name normalisation'],
+      ['cert_date',    '31.3.2027',         '2027-03-31',      'ISO-8601 date format'],
     ]
   },
   harmonise: {
-    cols: ['Feld','Vorher','Nachher','Regel'],
+    cols: ['Field','Before','After','Rule'],
     rows: [
-      ['weight',           '0.012 kg',                '12 g',      'Einheitenumrechnung kg→g'],
-      ['country',          'Deutschland',             'DE',         'ISO 3166 Ländercode'],
-      ['supplier',         'Acme GmbH',               'SUP-00492', 'Lieferanten-ID-Lookup'],
-      ['recycled_content', '30 percent',              '30',         'Numerische Normalisierung'],
-      ['material',         'High Density Polyethylene','HDPE',      'Material-Taxonomie'],
+      ['weight',           '0.012 kg',                '12 g',      'Unit conversion kg→g'],
+      ['country',          'Germany',                 'DE',         'ISO 3166 country code'],
+      ['supplier',         'Acme GmbH',               'SUP-00492', 'Supplier ID lookup'],
+      ['recycled_content', '30 percent',              '30',         'Numeric normalisation'],
+      ['material',         'High Density Polyethylene','HDPE',      'Material taxonomy'],
     ]
   },
   match: {
-    cols: ['Kandidaten','Konfidenz','Status'],
+    cols: ['Candidates','Confidence','Status'],
     rows: [
       ['"Cap HDPE" / "Closure PE-HD"',         '94%', 'auto-merged'],
       ['"Bottle PET 1L" / "PET container 28g"','91%', 'auto-merged'],
@@ -108,23 +108,23 @@ const ETL_DATA = {
     ]
   },
   validate: {
-    cols: ['Regel','Ergebnis','Detail'],
+    cols: ['Rule','Result','Detail'],
     rows: [
-      ['Alle Komponenten haben Materialtyp',         'pass', '5/5'],
-      ['Alle Gewichte in Gramm',                     'pass', '5/5'],
-      ['Recyclinganteil für alle Komponenten',       'fail', '3/5'],
-      ['Gültige Recycelbarkeitsklasse für alle',     'fail', '0/5'],
-      ['Lieferantendeklaration vorhanden',           'warn', '3/5'],
-      ['Zertifikat-Gültigkeitsprüfung',             'fail', '2/5 gültig'],
+      ['All components have a material type',        'pass', '5/5'],
+      ['All weights in grams',                       'pass', '5/5'],
+      ['Recycled content for all components',        'fail', '3/5'],
+      ['Valid recyclability class for all',          'fail', '0/5'],
+      ['Supplier declaration available',             'warn', '3/5'],
+      ['Certificate validity check',                 'fail', '2/5 valid'],
     ]
   },
   publish: {
-    cols: ['Aktion','Status'],
+    cols: ['Action','Status'],
     rows: [
-      ['osapiens Payload generieren', 'ready'],
-      ['Pflichtfelder validieren',    'partial'],
-      ['An osapiens Hub senden',      'pending'],
-      ['Lieferanten benachrichtigen', 'pending'],
+      ['Generate osapiens payload',   'ready'],
+      ['Validate mandatory fields',   'partial'],
+      ['Send to osapiens Hub',        'pending'],
+      ['Notify suppliers',            'pending'],
     ]
   },
 };
@@ -133,72 +133,72 @@ const AI_MATCHES = [
   {
     id:'M-001', partA:'Blue HDPE Cap 28mm', partB:'Closure PE-HD blue 28 mm',
     confidence:94,
-    reason:'Gleiches Material (HDPE/PE-HD), Durchmesser (28mm), Farbe (blau), Lieferant (SUP-00492). Gewichtstoleranz ±2%.',
+    reason:'Same material (HDPE/PE-HD), diameter (28mm), colour (blue), supplier (SUP-00492). Weight tolerance ±2%.',
     attrs:[
       {attr:'Material',        a:'HDPE',     b:'PE-HD',    match:true},
-      {attr:'Farbe',           a:'Blau',     b:'blue',     match:true},
-      {attr:'Durchmesser',     a:'28 mm',    b:'28 mm',    match:true},
-      {attr:'Lieferant',       a:'SUP-00492',b:'SUP-00492',match:true},
-      {attr:'Gewicht (±2%)',   a:'3.2 g',    b:'3.18 g',   match:true},
+      {attr:'Colour',          a:'Blue',     b:'blue',     match:true},
+      {attr:'Diameter',        a:'28 mm',    b:'28 mm',    match:true},
+      {attr:'Supplier',        a:'SUP-00492',b:'SUP-00492',match:true},
+      {attr:'Weight (±2%)',    a:'3.2 g',    b:'3.18 g',   match:true},
     ],
-    suggestion:'Merge → Kanonisch: "Verschluss HDPE blau 28mm" (C-002)',
+    suggestion:'Merge → Canonical: "Closure HDPE blue 28mm" (C-002)',
     status:'pending',
   },
   {
     id:'M-002', partA:'Label PET transparent', partB:'Sleeve PET clear',
     confidence:72,
-    reason:'Gleiches Material (PET) und Transparenz, aber unterschiedliche Komponententypen (Etikett vs. Sleeve).',
+    reason:'Same material (PET) and transparency, but different component types (label vs. sleeve).',
     attrs:[
       {attr:'Material',        a:'PET',      b:'PET',      match:true},
-      {attr:'Transparenz',     a:'transparent',b:'clear',  match:true},
-      {attr:'Komponententyp',  a:'Etikett',  b:'Sleeve',   match:false},
-      {attr:'Lieferant',       a:'SUP-200',  b:'SUP-210',  match:false},
-      {attr:'Gewicht',         a:'1.8 g',    b:'4.2 g',    match:false},
+      {attr:'Transparency',    a:'transparent',b:'clear',  match:true},
+      {attr:'Component type',  a:'Label',    b:'Sleeve',   match:false},
+      {attr:'Supplier',        a:'SUP-200',  b:'SUP-210',  match:false},
+      {attr:'Weight',          a:'1.8 g',    b:'4.2 g',    match:false},
     ],
-    suggestion:'Manuelle Prüfung erforderlich — unterschiedliche Komponententypen erkannt',
+    suggestion:'Manual review required — different component types detected',
     status:'pending',
   },
   {
     id:'M-003', partA:'Corrugated box 12-pack', partB:'Transport carton 12x1L',
     confidence:89,
-    reason:'Gleiche Abmessungen, Verwendung (12-Pack) und Material (Wellpappe). Lieferant identisch.',
+    reason:'Same dimensions, use (12-pack) and material (corrugated board). Supplier is identical.',
     attrs:[
-      {attr:'Material',   a:'Wellpappe',  b:'Wellpappe',  match:true},
-      {attr:'Kapazität',  a:'12 Stück',   b:'12x1L',      match:true},
-      {attr:'Verwendung', a:'Transport',  b:'Transport',  match:true},
-      {attr:'Lieferant',  a:'SUP-400',    b:'SUP-400',    match:true},
-      {attr:'Gewicht',    a:'185 g',      b:'187 g',      match:true},
+      {attr:'Material',   a:'Corrugated board', b:'Corrugated board', match:true},
+      {attr:'Capacity',   a:'12 units',         b:'12x1L',            match:true},
+      {attr:'Use',        a:'Transport',        b:'Transport',        match:true},
+      {attr:'Supplier',   a:'SUP-400',          b:'SUP-400',          match:true},
+      {attr:'Weight',     a:'185 g',            b:'187 g',            match:true},
     ],
-    suggestion:'Merge → Kanonisch: "Transportbox Wellpappe 12-Pack" (C-005)',
+    suggestion:'Merge → Canonical: "Transport box corrugated board 12-pack" (C-005)',
     status:'pending',
   },
   {
     id:'M-004', partA:'Shrink wrap PE', partB:'PE shrink film packaging',
     confidence:81,
-    reason:'Gleiches Material (LDPE/PE), gleiche Anwendung (Schrumpfverpackung). Lieferant identisch.',
+    reason:'Same material (LDPE/PE), same application (shrink packaging). Supplier is identical.',
     attrs:[
       {attr:'Material',    a:'PE',         b:'LDPE',       match:true},
-      {attr:'Anwendung',   a:'shrink wrap',b:'shrink film', match:true},
-      {attr:'Lieferant',   a:'SUP-300',    b:'SUP-300',    match:true},
-      {attr:'Gewicht',     a:'8.2 g',      b:'8.0 g',      match:true},
-      {attr:'Stärke',      a:'n/a',        b:'40µm',       match:false},
+      {attr:'Application', a:'shrink wrap',b:'shrink film', match:true},
+      {attr:'Supplier',    a:'SUP-300',    b:'SUP-300',    match:true},
+      {attr:'Weight',      a:'8.2 g',      b:'8.0 g',      match:true},
+      {attr:'Thickness',   a:'n/a',        b:'40µm',       match:false},
     ],
-    suggestion:'Merge → Kanonisch: "Schrumpffolie LDPE" (C-004)',
+    suggestion:'Merge → Canonical: "Shrink film LDPE" (C-004)',
     status:'pending',
   },
 ];
 
 const SUPPLIER_EVENTS = [
-  { time:'09:30', color:'blue',   actor:'System',                     action:'Compliance-Datenanforderung an 3 Lieferanten versandt', detail:'SUP-100, SUP-200, SUP-300' },
-  { time:'09:44', color:'purple', actor:'AI Engine',                  action:'Alias-Vorschlag: PE-HD → HDPE', detail:'94% Konfidenz – 4 Quellvarianten aufgelöst' },
-  { time:'09:46', color:'teal',   actor:'Data Steward (M. Schmidt)',  action:'KI-Merge für Verschluss-Komponente genehmigt', detail:'PE-HD / HDPE / Polyethylene HD → HDPE kanonisch' },
-  { time:'09:51', color:'green',  actor:'GlobalPack GmbH (SUP-100)', action:'Zertifikat CERT-RC-2026-001 hochgeladen', detail:'Recyclinganteil-Zertifikat, gültig bis 2027-03-31' },
-  { time:'09:52', color:'green',  actor:'GlobalPack GmbH (SUP-100)', action:'Recyclinganteil korrigiert: 25% → 30%', detail:'Flaschen-Komponente, aktualisierte Materialdeklaration' },
-  { time:'09:55', color:'blue',   actor:'System',                     action:'osapiens Payload neu generiert', detail:'Readiness verbessert: 62% → 78%' },
-  { time:'10:02', color:'amber',  actor:'LabelTech AG (SUP-200)',     action:'Materialdeklaration für Etikett eingereicht', detail:'PET transparent, 0% Recyclinganteil, kein Zertifikat verfügbar' },
-  { time:'10:15', color:'amber',  actor:'WrapCo International (SUP-300)', action:'Änderungsmeldung: Schrumpffolie Material', detail:'PE → LDPE 40µm, Re-Validierung angefordert' },
-  { time:'10:18', color:'teal',   actor:'Data Steward (M. Schmidt)',  action:'Materialänderung Schrumpffolie genehmigt', detail:'LDPE bestätigt, Gewichtsvarianz innerhalb Toleranz' },
-  { time:'10:22', color:'green',  actor:'System',                     action:'Finaler Payload an osapiens Hub publiziert', detail:'PKG-7781 – Readiness: 91%' },
+  { time:'09:30', color:'blue',   actor:'System',                     action:'Compliance data request sent to 3 suppliers', detail:'SUP-100, SUP-200, SUP-300' },
+  { time:'09:44', color:'purple', actor:'AI Engine',                  action:'Alias suggestion: PE-HD → HDPE', detail:'94% confidence – 4 source variants resolved' },
+  { time:'09:46', color:'teal',   actor:'Data Steward (M. Schmidt)',  action:'AI merge for closure component approved', detail:'PE-HD / HDPE / Polyethylene HD → canonical HDPE' },
+  { time:'09:51', color:'green',  actor:'GlobalPack GmbH (SUP-100)', action:'Certificate CERT-RC-2026-001 uploaded', detail:'Recycled content certificate, valid until 2027-03-31' },
+  { time:'09:52', color:'green',  actor:'GlobalPack GmbH (SUP-100)', action:'Recycled content corrected: 25% → 30%', detail:'Bottle component, updated material declaration' },
+  { time:'09:55', color:'blue',   actor:'System',                     action:'osapiens payload regenerated', detail:'Readiness improved: 62% → 78%' },
+  { time:'10:02', color:'amber',  actor:'LabelTech AG (SUP-200)',     action:'Material declaration for label submitted', detail:'PET transparent, 0% recycled content, no certificate available' },
+  { time:'10:15', color:'amber',  actor:'WrapCo International (SUP-300)', action:'Change notification: shrink film material', detail:'PE → LDPE 40µm, re-validation requested' },
+  { time:'10:18', color:'teal',   actor:'Data Steward (M. Schmidt)',  action:'Material change for shrink film approved', detail:'LDPE confirmed, weight variance within tolerance' },
+  { time:'10:22', color:'green',  actor:'System',                     action:'Final payload published to osapiens Hub', detail:'PKG-7781 – Readiness: 91%' },
 ];
 
 const OSAPIENS_PAYLOAD = {
@@ -213,17 +213,17 @@ const OSAPIENS_PAYLOAD = {
   components: [
     {
       component_id: "C-001",
-      component_name: "Flasche",
+      component_name: "Bottle",
       material: "PET",
       weight_g: 28.5,
       recycled_content_percent: 30,
       supplier_id: "SUP-100",
       recyclability_grade: "A",
-      evidence: [{ type: "Recycling-Zertifikat", certificate_id: "CERT-RC-2026-001", valid_until: "2027-03-31" }]
+      evidence: [{ type: "Recycling certificate", certificate_id: "CERT-RC-2026-001", valid_until: "2027-03-31" }]
     },
     {
       component_id: "C-002",
-      component_name: "Verschluss HDPE blau 28mm",
+      component_name: "Closure HDPE blue 28mm",
       material: "HDPE",
       weight_g: 3.2,
       recycled_content_percent: 25,
@@ -239,17 +239,17 @@ const OSAPIENS_PAYLOAD = {
 
 function StatusBadge({ status }) {
   const map = {
-    complete:   { cls:'bg-emerald-100 text-emerald-800', label:'Vollständig' },
-    incomplete: { cls:'bg-amber-100 text-amber-800',     label:'Unvollständig' },
-    missing:    { cls:'bg-red-100 text-red-800',         label:'Fehlend' },
+    complete:   { cls:'bg-emerald-100 text-emerald-800', label:'Complete' },
+    incomplete: { cls:'bg-amber-100 text-amber-800',     label:'Incomplete' },
+    missing:    { cls:'bg-red-100 text-red-800',         label:'Missing' },
     pass:       { cls:'bg-emerald-100 text-emerald-800', label:'OK' },
-    fail:       { cls:'bg-red-100 text-red-800',         label:'Fehler' },
-    warn:       { cls:'bg-amber-100 text-amber-800',     label:'Warnung' },
+    fail:       { cls:'bg-red-100 text-red-800',         label:'Error' },
+    warn:       { cls:'bg-amber-100 text-amber-800',     label:'Warning' },
     'auto-merged':   { cls:'bg-emerald-100 text-emerald-800', label:'Auto-Merged' },
-    'pending review':{ cls:'bg-amber-100 text-amber-800',     label:'Prüfung' },
-    ready:      { cls:'bg-emerald-100 text-emerald-800', label:'Bereit' },
-    partial:    { cls:'bg-amber-100 text-amber-800',     label:'Teilweise' },
-    pending:    { cls:'bg-slate-100 text-slate-600',     label:'Ausstehend' },
+    'pending review':{ cls:'bg-amber-100 text-amber-800',     label:'Review' },
+    ready:      { cls:'bg-emerald-100 text-emerald-800', label:'Ready' },
+    partial:    { cls:'bg-amber-100 text-amber-800',     label:'Partial' },
+    pending:    { cls:'bg-slate-100 text-slate-600',     label:'Pending' },
   };
   const { cls, label } = map[status] || { cls:'bg-gray-100 text-gray-700', label: status };
   return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{label}</span>;
@@ -285,13 +285,13 @@ function SectionHeader({ title, subtitle }) {
 function HomeScreen({ onNavigate }) {
   const regs = [
     { id:'ppwr', label:'PPWR', full:'Packaging & Packaging Waste Regulation', emoji:'📦', recommended:true,
-      tags:['Packaging-ID','Materialdeklaration','Recyclinganteil','EPR-Reporting'] },
+      tags:['Packaging ID','Material declaration','Recycled content','EPR reporting'] },
     { id:'espr', label:'ESPR', full:'Ecodesign for Sustainable Products Regulation', emoji:'♻️',
-      tags:['Digital Product Passport','Nachhaltigkeitsfaktoren','Performance-Klassen','DPP-Datenträger'] },
+      tags:['Digital Product Passport','Sustainability factors','Performance classes','DPP data carrier'] },
     { id:'eudr', label:'EUDR', full:'EU Deforestation Regulation', emoji:'🌲',
-      tags:['Geolokationsdaten','Lieferketten-Rückverfolgung','Sorgfaltspflicht','Länder-Risikobewertung'] },
+      tags:['Geolocation data','Supply chain traceability','Due diligence','Country risk assessment'] },
     { id:'cpr',  label:'CPR',  full:'Construction Products Regulation', emoji:'🏗️',
-      tags:['Leistungserklärung','CE-Kennzeichnung','Technische Dokumentation','Notifizierte Stelle'] },
+      tags:['Declaration of performance','CE marking','Technical documentation','Notified body'] },
   ];
 
   return (
@@ -301,12 +301,12 @@ function HomeScreen({ onNavigate }) {
           <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white text-lg font-bold">o</div>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Product Compliance Data Twin</h1>
-            <p className="text-slate-500 text-sm">Von fragmentierten Unternehmensdaten zu harmonisierten, osapiens-fähigen Compliance-Daten</p>
+            <p className="text-slate-500 text-sm">From fragmented enterprise data to harmonised, osapiens-ready compliance data</p>
           </div>
         </div>
       </div>
 
-      <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Regulierung wählen</p>
+      <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Choose regulation</p>
       <div className="grid grid-cols-2 gap-4 mb-8">
         {regs.map(r => (
           <div
@@ -317,7 +317,7 @@ function HomeScreen({ onNavigate }) {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-2xl">{r.emoji}</span>
               <span className="font-bold text-slate-800 text-lg">{r.label}</span>
-              {r.recommended && <span className="bg-teal-100 text-teal-700 text-xs px-2 py-0.5 rounded-full font-medium">Empfohlen</span>}
+              {r.recommended && <span className="bg-teal-100 text-teal-700 text-xs px-2 py-0.5 rounded-full font-medium">Recommended</span>}
             </div>
             <p className="text-sm text-slate-500 mb-3">{r.full}</p>
             <div className="flex flex-wrap gap-1.5">
@@ -325,7 +325,7 @@ function HomeScreen({ onNavigate }) {
             </div>
             {r.id === 'ppwr' && (
               <button onClick={() => onNavigate('discovery')} className="mt-4 w-full bg-teal-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-teal-700 transition-colors">
-                Demo starten →
+                Start demo →
               </button>
             )}
           </div>
@@ -333,14 +333,14 @@ function HomeScreen({ onNavigate }) {
       </div>
 
       <div className="bg-slate-800 rounded-xl p-6 text-white">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Demo-Szenario: PPWR Packaging Compliance Readiness</p>
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Demo scenario: PPWR Packaging Compliance Readiness</p>
         <p className="text-slate-300 text-sm mb-4">
-          Produkt: <span className="text-teal-300 font-medium">Sparkling Water 1L</span> ·
-          Markt: <span className="text-teal-300 font-medium">Deutschland (DE)</span> ·
-          Packaging-ID: <span className="text-teal-300 font-medium">PKG-7781</span>
+          Product: <span className="text-teal-300 font-medium">Sparkling Water 1L</span> ·
+          Market: <span className="text-teal-300 font-medium">Germany (DE)</span> ·
+          Packaging ID: <span className="text-teal-300 font-medium">PKG-7781</span>
         </p>
         <div className="grid grid-cols-4 gap-4">
-          {[['5','Komponenten'],['14','PPWR-Datenpunkte'],['4','Quellsysteme'],['62%→91%','Readiness']].map(([v,l]) => (
+          {[['5','Components'],['14','PPWR data points'],['4','Source systems'],['62%→91%','Readiness']].map(([v,l]) => (
             <div key={l}>
               <div className="text-2xl font-bold text-teal-400">{v}</div>
               <div className="text-slate-400 text-xs mt-0.5">{l}</div>
@@ -356,24 +356,24 @@ function HomeScreen({ onNavigate }) {
 
 function DataDiscoveryScreen() {
   const sources = [
-    { name:'ERP (SAP)',          emoji:'🏢', status:'connected', dps:['Verpackungs-ID','Lieferanten-ID','IVB-Mengen'] },
-    { name:'PLM (Windchill)',    emoji:'⚙️', status:'connected', dps:['Stückliste','Materialspezifikation','Komponentengewichte'] },
-    { name:'Lieferantenportal', emoji:'🏭', status:'partial',   dps:['Materialdeklarationen','Zertifikate','SDB-Dokumente'] },
-    { name:'Excel / Legacy',    emoji:'📊', status:'partial',   dps:['Recyclinganteil','EPR-Mapping'] },
-    { name:'Dokumenten-Mgmt',   emoji:'📄', status:'connected', dps:['Prüfberichte','Konformitätserklärung'] },
+    { name:'ERP (SAP)',         emoji:'🏢', status:'connected', dps:['Packaging ID','Supplier ID','Placed-on-market volumes'] },
+    { name:'PLM (Windchill)',   emoji:'⚙️', status:'connected', dps:['Bill of materials','Material specification','Component weights'] },
+    { name:'Supplier portal',   emoji:'🏭', status:'partial',   dps:['Material declarations','Certificates','SDS documents'] },
+    { name:'Excel / Legacy',    emoji:'📊', status:'partial',   dps:['Recycled content','EPR mapping'] },
+    { name:'Document Mgmt',     emoji:'📄', status:'connected', dps:['Test reports','Declaration of conformity'] },
   ];
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Stage 1: Data Discovery" subtitle="PPWR-relevante Datenpunkte in allen Unternehmenssystemen identifizieren und bewerten." />
+      <SectionHeader title="Stage 1: Data Discovery" subtitle="Identify and assess PPWR-relevant data points across all enterprise systems." />
 
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {[
-          { label:'Gefunden',      val:'11 / 14', bg:'bg-teal-50',   text:'text-teal-700' },
-          { label:'Vollständig',   val:'6',       bg:'bg-emerald-50',text:'text-emerald-700' },
-          { label:'Unvollständig', val:'5',       bg:'bg-amber-50',  text:'text-amber-700' },
-          { label:'Fehlend',       val:'3',       bg:'bg-red-50',    text:'text-red-700' },
+          { label:'Found',         val:'11 / 14', bg:'bg-teal-50',   text:'text-teal-700' },
+          { label:'Complete',      val:'6',       bg:'bg-emerald-50',text:'text-emerald-700' },
+          { label:'Incomplete',    val:'5',       bg:'bg-amber-50',  text:'text-amber-700' },
+          { label:'Missing',       val:'3',       bg:'bg-red-50',    text:'text-red-700' },
         ].map(k => (
           <Card key={k.label} className={`p-4 ${k.bg}`}>
             <div className={`text-2xl font-bold ${k.text}`}>{k.val}</div>
@@ -384,11 +384,11 @@ function DataDiscoveryScreen() {
 
       {/* Lineage graph */}
       <Card className="p-6 mb-6">
-        <h3 className="font-semibold text-slate-700 mb-4">Datenherkunft: Quellsysteme → Datenpunkte → Konsumenten</h3>
+        <h3 className="font-semibold text-slate-700 mb-4">Data lineage: source systems → data points → consumers</h3>
         <div className="flex gap-3 overflow-x-auto items-start">
           {/* Sources */}
           <div className="w-44 flex-shrink-0">
-            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Quellsysteme</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Source systems</p>
             <div className="space-y-1.5">
               {sources.map(s => (
                 <div key={s.name} className={`flex items-center gap-2 p-2 rounded-lg border text-xs ${s.status==='connected'?'border-emerald-200 bg-emerald-50':'border-amber-200 bg-amber-50'}`}>
@@ -402,7 +402,7 @@ function DataDiscoveryScreen() {
           <div className="text-slate-300 text-2xl pt-16 flex-shrink-0">→</div>
           {/* Datapoints */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">PPWR-Datenpunkte</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">PPWR data points</p>
             <div className="space-y-1">
               {DATAPOINTS.map(dp => (
                 <div key={dp.id} className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50 border border-slate-100">
@@ -418,9 +418,9 @@ function DataDiscoveryScreen() {
           <div className="text-slate-300 text-2xl pt-16 flex-shrink-0">→</div>
           {/* Consumers */}
           <div className="w-36 flex-shrink-0">
-            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Konsumenten</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Consumers</p>
             <div className="space-y-1.5">
-              {['osapiens Hub','EPR-Report','Audit-Trail','DPP-Export'].map(c => (
+              {['osapiens Hub','EPR report','Audit trail','DPP export'].map(c => (
                 <div key={c} className="p-2 rounded-lg bg-teal-50 border border-teal-200">
                   <span className="text-xs font-medium text-teal-700">{c}</span>
                 </div>
@@ -433,13 +433,13 @@ function DataDiscoveryScreen() {
       {/* Component table */}
       <Card>
         <div className="p-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-700">Komponenten: Sparkling Water 1L (PKG-7781)</h3>
+          <h3 className="font-semibold text-slate-700">Components: Sparkling Water 1L (PKG-7781)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
-                {['Komponente','Material','Gewicht','Recycling','Lieferant','Recycelbar.','Qualität','Status'].map(h =>
+                {['Component','Material','Weight','Recycling','Supplier','Recyclable','Quality','Status'].map(h =>
                   <th key={h} className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase">{h}</th>
                 )}
               </tr>
@@ -477,10 +477,10 @@ function DataInventoryScreen() {
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Stage 2: Data Inventory & Ownership" subtitle="Quelle, Eigentümer, rechtlicher Kontext, Qualität und Herkunft jedes Datenpunkts." />
+      <SectionHeader title="Stage 2: Data Inventory & Ownership" subtitle="Source, owner, legal context, quality and lineage of each data point." />
 
       <div className="flex gap-2 mb-4">
-        {[['all','Alle'],['complete','Vollständig'],['incomplete','Unvollständig'],['missing','Fehlend']].map(([k,l]) => (
+        {[['all','All'],['complete','Complete'],['incomplete','Incomplete'],['missing','Missing']].map(([k,l]) => (
           <button key={k} onClick={() => setFilter(k)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${filter===k?'bg-teal-600 text-white':'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
             {l}
@@ -493,7 +493,7 @@ function DataInventoryScreen() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              {['Datenpunkt','Rechtsgrundlage','Quelle','Steward','Qualität','Nachweis','Status'].map(h =>
+              {['Data point','Legal basis','Source','Steward','Quality','Evidence','Status'].map(h =>
                 <th key={h} className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
               )}
             </tr>
@@ -526,7 +526,7 @@ function ETLPipelineScreen() {
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Stage 3: ETL & Harmonisation" subtitle="Fragmentierte Rohdaten durch Extract → Profile → Cleanse → Harmonise → Match → Validate → Publish transformieren." />
+      <SectionHeader title="Stage 3: ETL & Harmonisation" subtitle="Transform fragmented raw data through Extract → Profile → Cleanse → Harmonise → Match → Validate → Publish." />
 
       {/* Pipeline strip */}
       <Card className="p-5 mb-6 overflow-x-auto">
@@ -595,16 +595,16 @@ function AIMatchingScreen() {
     rejected:'bg-red-100 text-red-700',
     review:  'bg-blue-100 text-blue-700',
   };
-  const statusLabels = { pending:'Ausstehend', accepted:'✓ Genehmigt', rejected:'✗ Abgelehnt', review:'Prüfung' };
+  const statusLabels = { pending:'Pending', accepted:'✓ Approved', rejected:'✗ Rejected', review:'Review' };
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Stage 4: AI-basierte Teile-Erkennung" subtitle="Identifikation gleicher oder ähnlicher Teile mit unterschiedlicher Benennung — mit Human-in-the-Loop Workflow." />
+      <SectionHeader title="Stage 4: AI-Based Part Matching" subtitle="Identify identical or similar parts with different names — using a human-in-the-loop workflow." />
 
       <div className="flex gap-5">
         {/* List */}
         <div className="w-72 flex-shrink-0 space-y-2">
-          <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{matches.length} Kandidaten</p>
+          <p className="text-xs font-semibold text-slate-400 uppercase mb-2">{matches.length} candidates</p>
           {matches.map(match => (
             <div key={match.id} onClick={() => setSelId(match.id)}
               className={`p-3 rounded-xl border cursor-pointer transition-all ${selId===match.id?'border-teal-500 bg-teal-50':'border-slate-200 bg-white hover:border-teal-200'}`}>
@@ -636,19 +636,19 @@ function AIMatchingScreen() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-700 font-bold text-sm">AI</div>
                 <div>
-                  <p className="font-semibold text-slate-800">Analyse {m.id}</p>
+                  <p className="font-semibold text-slate-800">Analysis {m.id}</p>
                   <div className="flex items-center gap-2">
                     <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div style={{width:`${m.confidence}%`,background:m.confidence>85?'#10b981':'#f59e0b'}} className="h-full rounded-full"/>
                     </div>
-                    <span className="font-bold text-slate-800">{m.confidence}% Konfidenz</span>
+                    <span className="font-bold text-slate-800">{m.confidence}% confidence</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-blue-50 rounded-lg p-3"><p className="text-xs font-semibold text-blue-500 mb-1">Kandidat A</p><p className="text-sm font-medium text-slate-800">{m.partA}</p></div>
-                <div className="bg-purple-50 rounded-lg p-3"><p className="text-xs font-semibold text-purple-500 mb-1">Kandidat B</p><p className="text-sm font-medium text-slate-800">{m.partB}</p></div>
+                <div className="bg-blue-50 rounded-lg p-3"><p className="text-xs font-semibold text-blue-500 mb-1">Candidate A</p><p className="text-sm font-medium text-slate-800">{m.partA}</p></div>
+                <div className="bg-purple-50 rounded-lg p-3"><p className="text-xs font-semibold text-purple-500 mb-1">Candidate B</p><p className="text-sm font-medium text-slate-800">{m.partB}</p></div>
               </div>
 
               <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 mb-4">{m.reason}</div>
@@ -656,7 +656,7 @@ function AIMatchingScreen() {
               <div className="mb-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-100">
-                    <tr>{['Attribut','Kandidat A','Kandidat B','Match'].map(h=><th key={h} className="text-left py-2 px-3 text-xs font-semibold text-slate-500">{h}</th>)}</tr>
+                    <tr>{['Attribute','Candidate A','Candidate B','Match'].map(h=><th key={h} className="text-left py-2 px-3 text-xs font-semibold text-slate-500">{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {m.attrs.map((a,i)=>(
@@ -675,13 +675,13 @@ function AIMatchingScreen() {
 
               {m.status === 'pending' ? (
                 <div className="flex gap-2">
-                  <button onClick={()=>act(m.id,'accepted')} className="flex-1 bg-emerald-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-700">✓ Merge akzeptieren</button>
-                  <button onClick={()=>act(m.id,'review')}   className="flex-1 bg-blue-100 text-blue-700 rounded-lg py-2 text-sm font-medium hover:bg-blue-200">🔍 Überprüfen</button>
-                  <button onClick={()=>act(m.id,'rejected')} className="flex-1 bg-red-100 text-red-700 rounded-lg py-2 text-sm font-medium hover:bg-red-200">✗ Ablehnen</button>
+                  <button onClick={()=>act(m.id,'accepted')} className="flex-1 bg-emerald-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-emerald-700">✓ Accept merge</button>
+                  <button onClick={()=>act(m.id,'review')}   className="flex-1 bg-blue-100 text-blue-700 rounded-lg py-2 text-sm font-medium hover:bg-blue-200">🔍 Review</button>
+                  <button onClick={()=>act(m.id,'rejected')} className="flex-1 bg-red-100 text-red-700 rounded-lg py-2 text-sm font-medium hover:bg-red-200">✗ Reject</button>
                 </div>
               ) : (
                 <div className={`text-center py-2.5 rounded-lg text-sm font-medium ${statusColors[m.status]}`}>
-                  {m.status==='accepted'?'✓ Genehmigt — Merge wird durchgeführt':m.status==='rejected'?'✗ Abgelehnt — Keine Änderung':'🔍 Zur manuellen Überprüfung markiert'}
+                  {m.status==='accepted'?'✓ Approved — merge in progress':m.status==='rejected'?'✗ Rejected — no change':'🔍 Marked for manual review'}
                 </div>
               )}
             </Card>
@@ -722,7 +722,7 @@ function OsapiensShapingScreen() {
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Stage 5a: osapiens Data Shaping" subtitle="Harmonisierte Daten in osapiens-konforme JSON-Payload-Struktur umwandeln und an den Hub senden." />
+      <SectionHeader title="Stage 5a: osapiens Data Shaping" subtitle="Convert harmonised data into an osapiens-compliant JSON payload structure and send it to the Hub." />
 
       <div className="flex gap-5">
         <div className="flex-1 min-w-0">
@@ -732,11 +732,11 @@ function OsapiensShapingScreen() {
           </div>
           {!published ? (
             <button onClick={()=>setPublished(true)} className="w-full bg-teal-600 text-white rounded-xl py-3 font-semibold hover:bg-teal-700 transition-colors text-sm">
-              📤 An osapiens Hub publizieren
+              📤 Publish to osapiens Hub
             </button>
           ) : (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-              <p className="text-emerald-700 font-semibold">✅ Erfolgreich an osapiens Hub publiziert</p>
+              <p className="text-emerald-700 font-semibold">✅ Successfully published to osapiens Hub</p>
               <p className="text-emerald-600 text-sm mt-1">PKG-7781 · 2026-05-13T10:22:00Z · Readiness: 91%</p>
             </div>
           )}
@@ -744,7 +744,7 @@ function OsapiensShapingScreen() {
 
         <div className="w-60 flex-shrink-0">
           <Card className="p-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Pflichtfelder-Prüfung</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase mb-3">Mandatory field check</p>
             <div className="space-y-2">
               {fields.map(f => (
                 <div key={f.f} className="flex items-center gap-2">
@@ -754,7 +754,7 @@ function OsapiensShapingScreen() {
               ))}
             </div>
             <div className="mt-4 pt-3 border-t border-slate-100">
-              <p className="text-xs text-slate-500 mb-1.5">Feldvollständigkeit</p>
+              <p className="text-xs text-slate-500 mb-1.5">Field completeness</p>
               <QualityBar score={75} />
             </div>
           </Card>
@@ -787,10 +787,10 @@ function SupplierPlaybackScreen() {
   return (
     <div className="p-8 max-w-3xl fade-in">
       <div className="flex items-start justify-between mb-6">
-        <SectionHeader title="Stage 5b: Supplier Playback Simulator" subtitle="Lieferanten-Erklärungen, Korrekturen und Nachweis-Uploads simuliert einspielen." />
+        <SectionHeader title="Stage 5b: Supplier Playback Simulator" subtitle="Simulate supplier declarations, corrections and evidence uploads." />
         <button onClick={replay} disabled={running}
           className="ml-4 flex-shrink-0 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50 transition-colors">
-          {running ? '⏳ Läuft…' : '▶ Replay'}
+          {running ? '⏳ Running…' : '▶ Replay'}
         </button>
       </div>
 
@@ -815,7 +815,7 @@ function SupplierPlaybackScreen() {
 
       {visible < SUPPLIER_EVENTS.length && !running && (
         <button onClick={()=>setVisible(SUPPLIER_EVENTS.length)} className="mt-4 text-sm text-teal-600 hover:text-teal-700 font-medium">
-          Alle {SUPPLIER_EVENTS.length} Events anzeigen →
+          Show all {SUPPLIER_EVENTS.length} events →
         </button>
       )}
     </div>
@@ -850,29 +850,29 @@ function ComplianceCockpitScreen() {
   }, [readiness]);
 
   const kpis = [
-    { label:'Produkte bewertet', val:'128', emoji:'📦' },
-    { label:'Verpack.-Komponenten', val:'642', emoji:'🧩' },
-    { label:'Datenpunkte gesamt', val:'4.912', emoji:'📊' },
-    { label:'Datenpunkte komplett', val:'3.984', emoji:'✅' },
-    { label:'Fehlende Nachweise', val:'214', emoji:'⚠️' },
-    { label:'KI-Duplikat-Kand.', val:'87', emoji:'🤖' },
+    { label:'Products assessed', val:'128', emoji:'📦' },
+    { label:'Packaging components', val:'642', emoji:'🧩' },
+    { label:'Total data points', val:'4,912', emoji:'📊' },
+    { label:'Complete data points', val:'3,984', emoji:'✅' },
+    { label:'Missing evidence', val:'214', emoji:'⚠️' },
+    { label:'AI duplicate candidates', val:'87', emoji:'🤖' },
   ];
 
   const audit = [
-    { time:'09:44', event:'KI schlug Alias PE-HD → HDPE vor',             user:'AI Engine' },
-    { time:'09:46', event:'Data Steward genehmigte Merge',                 user:'M. Schmidt' },
-    { time:'09:51', event:'SUP-100 lud CERT-RC-2026-001 hoch',            user:'GlobalPack GmbH' },
-    { time:'09:52', event:'Recyclinganteil korrigiert: 25% → 30%',        user:'GlobalPack GmbH' },
-    { time:'09:55', event:'osapiens Payload neu generiert',                user:'System' },
-    { time:'10:02', event:'Materialdeklaration Etikett eingereicht',       user:'LabelTech AG' },
-    { time:'10:15', event:'Änderungsmeldung: PE → LDPE Schrumpffolie',   user:'WrapCo International' },
-    { time:'10:18', event:'Materialänderung genehmigt',                    user:'M. Schmidt' },
-    { time:'10:22', event:'Finaler Payload an osapiens Hub publiziert',    user:'System' },
+    { time:'09:44', event:'AI suggested alias PE-HD → HDPE',               user:'AI Engine' },
+    { time:'09:46', event:'Data Steward approved merge',                   user:'M. Schmidt' },
+    { time:'09:51', event:'SUP-100 uploaded CERT-RC-2026-001',             user:'GlobalPack GmbH' },
+    { time:'09:52', event:'Recycled content corrected: 25% → 30%',         user:'GlobalPack GmbH' },
+    { time:'09:55', event:'osapiens payload regenerated',                  user:'System' },
+    { time:'10:02', event:'Material declaration for label submitted',      user:'LabelTech AG' },
+    { time:'10:15', event:'Change notification: PE → LDPE shrink film',    user:'WrapCo International' },
+    { time:'10:18', event:'Material change approved',                      user:'M. Schmidt' },
+    { time:'10:22', event:'Final payload published to osapiens Hub',        user:'System' },
   ];
 
   return (
     <div className="p-8 max-w-5xl fade-in">
-      <SectionHeader title="Compliance Cockpit" subtitle="Gesamtübersicht: Bereitschaftsgrad, KPIs, fehlende Maßnahmen und Audit-Trail." />
+      <SectionHeader title="Compliance Cockpit" subtitle="Overall view: readiness level, KPIs, missing actions and audit trail." />
 
       <div className="grid grid-cols-3 gap-5 mb-5">
         {/* Gauge */}
@@ -880,8 +880,8 @@ function ComplianceCockpitScreen() {
           <p className="text-sm font-semibold text-slate-500 mb-2">osapiens Hub Readiness</p>
           <div ref={chartRef} style={{width:'200px',height:'130px'}} />
           <div className="flex gap-2 mt-3">
-            <button onClick={()=>setReadiness(62)} className="text-xs px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Vorher (62%)</button>
-            <button onClick={()=>setReadiness(91)} className="text-xs px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700">Nachher (91%)</button>
+            <button onClick={()=>setReadiness(62)} className="text-xs px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">Before (62%)</button>
+            <button onClick={()=>setReadiness(91)} className="text-xs px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700">After (91%)</button>
           </div>
         </Card>
 
@@ -900,7 +900,7 @@ function ComplianceCockpitScreen() {
       {/* Audit trail */}
       <Card>
         <div className="p-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-700">Audit-Trail</h3>
+          <h3 className="font-semibold text-slate-700">Audit trail</h3>
         </div>
         <div className="p-4 space-y-0.5">
           {audit.map((a,i) => (
