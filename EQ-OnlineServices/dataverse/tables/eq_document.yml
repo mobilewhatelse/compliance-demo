@@ -1,0 +1,137 @@
+name: eq_document
+displayName: EQ Document
+description: All documents, videos and files for EQ products with access level control
+attributes:
+  - name: eq_documentid
+    displayName: Document ID
+    type: Uniqueidentifier
+    isPrimaryKey: true
+
+  - name: eq_name
+    displayName: Document Title
+    type: String
+    maxLength: 300
+    required: true
+
+  - name: eq_product
+    displayName: Product
+    type: Lookup
+    relatedTable: eq_product
+    required: true
+
+  - name: eq_documenttype
+    displayName: Document Type
+    type: Picklist
+    required: true
+    options:
+      - value: 100000000
+        label: User Manual
+      - value: 100000001
+        label: Technical Data Sheet (TDS)
+      - value: 100000002
+        label: Brochure / WhitePaper
+      - value: 100000003
+        label: POD Guideline
+      - value: 100000004
+        label: Sales Initiative
+      - value: 100000005
+        label: Price Book
+      - value: 100000006
+        label: Service Manual
+      - value: 100000007
+        label: Video - Introduction
+      - value: 100000008
+        label: Video - Usability
+      - value: 100000009
+        label: Video - Testimonial
+      - value: 100000010
+        label: Video - Repair Tutorial
+      - value: 100000011
+        label: Firmware
+      - value: 100000012
+        label: Welding Program
+
+  - name: eq_accesslevel
+    displayName: Access Level
+    type: Picklist
+    required: true
+    options:
+      - value: 100000000
+        label: A - Public
+      - value: 100000001
+        label: B - Sales Partner
+      - value: 100000002
+        label: C - Service Partner
+      - value: 100000003
+        label: D - Integrator
+
+  - name: eq_fileurl
+    displayName: File URL / SharePoint Link
+    type: String
+    maxLength: 1000
+
+  - name: eq_filetype
+    displayName: File Type
+    type: Picklist
+    options:
+      - value: 100000000
+        label: PDF
+      - value: 100000001
+        label: Video (MP4/YouTube)
+      - value: 100000002
+        label: Software File
+      - value: 100000003
+        label: PowerPoint
+      - value: 100000004
+        label: ZIP
+
+  - name: eq_language
+    displayName: Language
+    type: String
+    maxLength: 10
+    example: "EN, DE, IT, FR"
+
+  - name: eq_version
+    displayName: Version / Revision
+    type: String
+    maxLength: 20
+
+  - name: eq_publishdate
+    displayName: Publish Date
+    type: DateTime
+
+  - name: eq_isactive
+    displayName: Active
+    type: Boolean
+    defaultValue: true
+
+  - name: eq_metadata
+    displayName: Search Metadata
+    type: Memo
+    maxLength: 1000
+    description: Product codes, keywords for search function
+
+tablePermissions:
+  - webRole: Anonymous
+    access: Read
+    scope: Global
+    filter: "eq_accesslevel eq 100000000"  # Level A only
+
+  - webRole: SalesPartner
+    access: Read
+    scope: Global
+    filter: "eq_accesslevel le 100000001"  # Level A + B
+
+  - webRole: ServicePartner
+    access: Read
+    scope: Global
+    filter: "eq_accesslevel le 100000002"  # Level A + B + C
+
+  - webRole: Integrator
+    access: Read
+    scope: Global
+    filter: "eq_accesslevel eq 100000000 or eq_accesslevel eq 100000003"  # Level A + D
+
+  - webRole: Administrator
+    access: ReadWriteCreateDelete
+    scope: Global

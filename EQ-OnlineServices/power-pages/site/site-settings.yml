@@ -1,0 +1,105 @@
+site:
+  name: EQ Online Services
+  displayName: vaBW EQ Online Services
+  description: Single touchpoint for all voestalpine Böhler Welding EQ product information and warranty management
+  defaultLanguage: en-US
+  primaryDomain: eq-services.voestalpine.com
+
+authentication:
+  localLoginEnabled: false
+  azureADEnabled: true              # AAD for internal vaBW users
+  externalRegistrationEnabled: true # External partners register via portal
+  registrationRequiresApproval: true
+  approvalNotificationEmail: eq-admin@voestalpine.com
+
+pages:
+  - name: Home
+    url: /
+    template: home
+    accessLevel: Anonymous
+    isPublished: true
+
+  - name: Products
+    url: /products
+    template: product-list
+    accessLevel: Anonymous
+    isPublished: true
+
+  - name: Product Detail
+    url: /products/{productcode}
+    template: product-detail
+    accessLevel: Anonymous
+    isPublished: true
+
+  - name: Product Search
+    url: /products/search
+    template: product-search
+    accessLevel: Authenticated   # Registered users only
+    isPublished: true
+
+  - name: Warranty Check
+    url: /warranty/check
+    template: warranty-check
+    accessLevel: ServicePartner
+    isPublished: true
+
+  - name: Warranty Registration Report
+    url: /warranty/report
+    template: warranty-report
+    accessLevel: ServicePartner
+    isPublished: true
+
+  - name: Service Tickets
+    url: /service-tickets
+    template: service-ticket-list
+    accessLevel: ServicePartner
+    isPublished: true
+
+  - name: New Service Ticket
+    url: /service-tickets/new
+    template: service-ticket-new
+    accessLevel: ServicePartner
+    isPublished: true
+
+  - name: Spare Parts Locator
+    url: /spare-parts
+    template: spare-parts-locator
+    accessLevel: SalesPartner
+    isPublished: true
+
+  - name: My Work Area
+    url: /my-workarea
+    template: my-workarea
+    accessLevel: Authenticated
+    isPublished: true
+
+  - name: Register
+    url: /register
+    template: registration
+    accessLevel: Anonymous
+    isPublished: true
+
+  - name: Q&A
+    url: /qa
+    template: qa-list
+    accessLevel: Authenticated
+    isPublished: true
+
+siteSettings:
+  - name: Authentication/Registration/RequiresConfirmation
+    value: "true"
+
+  - name: HTTP/X-Frame-Options
+    value: SAMEORIGIN
+
+  - name: Site/MaxUploadSize
+    value: "50"                    # MB - for document uploads
+
+  - name: Search/Enabled
+    value: "true"
+
+  - name: Search/IndexQueryName
+    value: eq-search-index
+
+  - name: Notifications/Email/Sender
+    value: eq-noreply@voestalpine.com

@@ -1,0 +1,448 @@
+{% comment %}
+  EQ Online Services — Service Ticket Manager (MUST HAVE)
+  Access: Level C (Service Partner) and above
+  Pages:
+    /service-tickets         → ticket list
+    /service-tickets/new     → new ticket form
+    /service-tickets/{id}    → ticket detail
+{% endcomment %}
+
+{% if user == null or user | has_role: 'SalesPartner' %}
+{% include 'va-access-denied' with required: 'Service Partner' %}
+{% else %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Tickets | EQ Online Services</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <nav class="va-header__nav">
+      <a href="/">Products</a>
+      <a href="/warranty/check">Warranty</a>
+      <a href="/service-tickets" class="active">Service Tickets</a>
+      <a href="/spare-parts">Spare Parts</a>
+    </nav>
+    <div class="va-header__actions">
+      <span class="va-header__user-name">{{ user.fullname }}</span>
+      <span class="va-header__role-badge">{{ user.roles | first }}</span>
+      <a href="/logout" class="va-btn va-btn--outline-white va-btn--sm">Logout</a>
+    </div>
+  </div>
+</header>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="va-page-header">
+  <div class="va-container">
+    <div class="va-page-header__eyebrow">Support</div>
+    <h1 class="va-page-header__title">Service Tickets</h1>
+    <p class="va-page-header__subtitle">
+      Manage warranty claims and repair requests for EQ welding equipment
+    </p>
+  </div>
+</div>
+
+<!-- ══ BREADCRUMB ══ -->
+<div class="va-breadcrumb">
+  <div class="va-container">
+    <div class="va-breadcrumb__inner">
+      <a href="/">Home</a>
+      <span class="va-breadcrumb__sep">›</span>
+      <span class="va-breadcrumb__current">Service Tickets</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TICKET LIST ══ -->
+<section class="va-section">
+  <div class="va-container">
+
+    <!-- Toolbar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="va-btn va-btn--outline va-btn--sm ticket-filter active" data-filter="all">All Tickets</button>
+        <button class="va-btn va-btn--outline va-btn--sm ticket-filter" data-filter="open">Open</button>
+        <button class="va-btn va-btn--outline va-btn--sm ticket-filter" data-filter="progress">In Progress</button>
+        <button class="va-btn va-btn--outline va-btn--sm ticket-filter" data-filter="resolved">Resolved</button>
+      </div>
+      <a href="/service-tickets/new" class="va-btn va-btn--primary">
+        + New Ticket
+      </a>
+    </div>
+
+    <!-- Ticket Table -->
+    {% assign tickets = entities['eq_serviceticket']
+        | where: 'eq_reportedby', user.contactid
+        | sort: 'createdon'
+        | reverse %}
+
+    {% if tickets.size == 0 %}
+    <div class="va-empty">
+      <div class="va-empty__icon">🎫</div>
+      <div class="va-empty__title">No Service Tickets Yet</div>
+      <div class="va-empty__text">Open a ticket to report a warranty claim or request a repair for EQ equipment.</div>
+      <a href="/service-tickets/new" class="va-btn va-btn--primary">Open First Ticket</a>
+    </div>
+    {% else %}
+
+    <div class="va-card">
+      <div class="va-table-wrap">
+        <table class="va-table" id="ticketTable">
+          <thead>
+            <tr>
+              <th>Ticket #</th>
+              <th>Serial Number</th>
+              <th>Product</th>
+              <th>Issue Type</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Last Update</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tickets %}
+            <tr data-status="{{ t.eq_status_label | downcase | replace: ' ', '' }}"
+                class="va-ticket-row">
+              <td><strong style="color:var(--va-navy)">{{ t.eq_ticketnumber }}</strong></td>
+              <td>{{ t.eq_serialnumber }}</td>
+              <td>{{ t.eq_product.eq_name }}</td>
+              <td>{{ t.eq_issuetype_label }}</td>
+              <td>
+                <span class="va-status va-status--{{ t.eq_status_label | downcase | replace: ' ', '' }}">
+                  {{ t.eq_status_label }}
+                </span>
+              </td>
+              <td>{{ t.createdon | date: '%d.%m.%Y' }}</td>
+              <td>{{ t.modifiedon | date: '%d.%m.%Y' }}</td>
+              <td>
+                <a href="/service-tickets/{{ t.eq_serviceticketid }}"
+                   class="va-link" style="font-size:12px;">
+                  View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- ══ NEW TICKET FORM (shown at /service-tickets/new) ══ -->
+{% if request.path contains '/new' %}
+<section class="va-section va-section--gray" id="newTicketSection">
+  <div class="va-container" style="max-width:800px;">
+
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Support Request</div>
+      <h2 class="va-section-header__title">Open New Service Ticket</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+
+    <form id="newTicketForm" class="va-card" onsubmit="submitTicket(event)">
+      <div class="va-card__body">
+
+        <!-- Step 1: Equipment -->
+        <div class="va-card__title">1. Equipment Information</div>
+        <div class="va-form">
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label va-label--required">Serial Number</label>
+              <input type="text" class="va-input" name="serialNumber"
+                     placeholder="e.g. TRX-2024-00123456" required
+                     oninput="lookupSerial(this.value)"/>
+              <span class="va-hint">Used to identify the product and check warranty status.</span>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label">Product (auto-filled)</label>
+              <input type="text" class="va-input" name="productName" id="productNameField"
+                     readonly placeholder="Will fill automatically after serial lookup" />
+            </div>
+          </div>
+
+          <!-- Warranty Status Indicator -->
+          <div id="warrantyIndicator" style="display:none;">
+            <div class="va-infobox va-infobox--info">
+              <div class="va-infobox__icon">🔍</div>
+              <div>
+                <div class="va-infobox__title" id="warrantyIndicatorTitle">Checking warranty...</div>
+                <div class="va-infobox__text" id="warrantyIndicatorText"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label va-label--required">Purchase Date</label>
+              <input type="date" class="va-input" name="purchaseDate" required/>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label">Purchase Location / Dealer</label>
+              <input type="text" class="va-input" name="dealer"
+                     placeholder="Dealer name or location"/>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--va-border); margin:28px 0;"/>
+
+        <!-- Step 2: Issue -->
+        <div class="va-card__title">2. Issue Description</div>
+        <div class="va-form">
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label va-label--required">Issue Type</label>
+              <select class="va-select" name="issueType" required>
+                <option value="">— Select —</option>
+                <option value="warranty_claim">Warranty Claim</option>
+                <option value="repair_request">Repair Request (Out of Warranty)</option>
+                <option value="technical_issue">Technical Issue / Malfunction</option>
+                <option value="spare_part_request">Spare Part Request</option>
+                <option value="firmware_update">Firmware Update Issue</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label va-label--required">Priority</label>
+              <select class="va-select" name="priority" required>
+                <option value="normal">Normal</option>
+                <option value="high">High – Machine not operational</option>
+                <option value="critical">Critical – Production stopped</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="va-form-group va-form-group--full">
+            <label class="va-label va-label--required">Fault Description</label>
+            <textarea class="va-textarea" name="faultDescription" rows="5" required
+                      placeholder="Describe the fault in detail: When did it occur? What error codes are displayed? What was the machine doing at the time?"></textarea>
+          </div>
+
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label">Error Code (if displayed)</label>
+              <input type="text" class="va-input" name="errorCode" placeholder="e.g. E-045"/>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label">Operating Hours at Fault</label>
+              <input type="number" class="va-input" name="operatingHours"
+                     placeholder="e.g. 1250" min="0"/>
+            </div>
+          </div>
+
+          <div class="va-form-group va-form-group--full">
+            <label class="va-label">Attach Photos / Documents</label>
+            <input type="file" class="va-input" name="attachments"
+                   multiple accept="image/*,.pdf"/>
+            <span class="va-hint">Max 10 MB per file. Accepted: JPG, PNG, PDF</span>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--va-border); margin:28px 0;"/>
+
+        <!-- Step 3: Contact -->
+        <div class="va-card__title">3. Contact Information</div>
+        <div class="va-form">
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label">Your Name</label>
+              <input type="text" class="va-input" name="contactName"
+                     value="{{ user.fullname }}" readonly/>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label">Company</label>
+              <input type="text" class="va-input" name="company"
+                     value="{{ user.parentcustomerid.name }}" readonly/>
+            </div>
+          </div>
+          <div class="va-form-row">
+            <div class="va-form-group">
+              <label class="va-label va-label--required">Email</label>
+              <input type="email" class="va-input" name="email"
+                     value="{{ user.emailaddress1 }}" required/>
+            </div>
+            <div class="va-form-group">
+              <label class="va-label">Phone</label>
+              <input type="tel" class="va-input" name="phone"
+                     value="{{ user.telephone1 }}"/>
+            </div>
+          </div>
+          <div class="va-form-group va-form-group--full">
+            <label class="va-label">Preferred Contact Method</label>
+            <div style="display:flex; gap:24px; padding:8px 0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio" name="contactMethod" value="email" checked/> Email
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="radio" name="contactMethod" value="phone"/> Phone
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--va-border); margin:28px 0;"/>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px;">
+          <a href="/service-tickets" class="va-btn va-btn--outline">Cancel</a>
+          <button type="submit" class="va-btn va-btn--primary va-btn--lg">
+            Submit Ticket
+          </button>
+        </div>
+
+      </div><!-- /.va-card__body -->
+    </form>
+
+    <!-- Confirmation (hidden until submit) -->
+    <div id="ticketConfirmation" style="display:none;" class="va-card">
+      <div class="va-card__body" style="text-align:center; padding:48px;">
+        <div style="font-size:56px; margin-bottom:16px;">✅</div>
+        <h2 style="color:var(--va-navy); margin-bottom:8px;">Ticket Submitted</h2>
+        <p style="color:var(--va-text-mid); margin-bottom:4px;">
+          Your ticket number: <strong id="confirmedTicketNo" style="color:var(--va-red)"></strong>
+        </p>
+        <p style="color:var(--va-text-mid); margin-bottom:28px;">
+          You will receive a confirmation email shortly. Our service team will respond within 1 business day.
+        </p>
+        <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <a href="/service-tickets" class="va-btn va-btn--outline">Back to Tickets</a>
+          <a href="/service-tickets/new" class="va-btn va-btn--primary">Open Another Ticket</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+{% include 'va-footer' %}
+
+<style>
+.ticket-filter.active { background: var(--va-navy); color: var(--va-white); border-color: var(--va-navy); }
+.va-ticket-row { transition: background 0.15s; cursor: pointer; }
+.va-ticket-row:hover td { background: var(--va-light); }
+.va-ticket-row[data-status="open"]     { border-left: none; }
+.va-ticket-row.hidden { display: none; }
+</style>
+
+<script>
+/* Filter tabs */
+document.querySelectorAll('.ticket-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ticket-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    document.querySelectorAll('.va-ticket-row').forEach(row => {
+      row.classList.toggle('hidden',
+        filter !== 'all' && row.dataset.status !== filter);
+    });
+  });
+});
+
+/* Row click → detail page */
+document.querySelectorAll('.va-ticket-row').forEach(row => {
+  row.addEventListener('click', (e) => {
+    if (!e.target.closest('a')) {
+      const link = row.querySelector('a');
+      if (link) window.location.href = link.href;
+    }
+  });
+});
+
+/* Serial number auto-lookup */
+let lookupTimer;
+async function lookupSerial(val) {
+  clearTimeout(lookupTimer);
+  const indicator = document.getElementById('warrantyIndicator');
+  const productField = document.getElementById('productNameField');
+  if (val.length < 8) { indicator.style.display = 'none'; return; }
+  lookupTimer = setTimeout(async () => {
+    indicator.style.display = 'block';
+    document.getElementById('warrantyIndicatorTitle').textContent = 'Looking up serial number...';
+    document.getElementById('warrantyIndicatorText').textContent = '';
+    try {
+      const r = await fetch(
+        `/api/data/v9.2/eq_warranties?$filter=eq_serialnumber eq '${encodeURIComponent(val)}'&$expand=eq_product($select=eq_name)&$select=eq_warrantyexpirydate`,
+        { headers: { 'OData-MaxVersion': '4.0', 'OData-Version': '4.0', Accept: 'application/json' } }
+      );
+      const d = await r.json();
+      if (d.value && d.value.length > 0) {
+        const w = d.value[0];
+        const pname = w['eq_product/eq_name'] || '';
+        productField.value = pname;
+        const exp = new Date(w.eq_warrantyexpirydate);
+        const active = exp > new Date();
+        const box = indicator.querySelector('.va-infobox');
+        box.className = 'va-infobox ' + (active ? 'va-infobox--success' : 'va-infobox--warning');
+        document.getElementById('warrantyIndicatorTitle').textContent =
+          active ? '✅ Warranty Active' : '⚠️ Warranty Expired';
+        document.getElementById('warrantyIndicatorText').textContent =
+          'Expiry: ' + exp.toLocaleDateString('en-GB') +
+          (active ? ' — Eligible for warranty claim.' : ' — Out-of-warranty repair only.');
+      } else {
+        productField.value = '';
+        const box = indicator.querySelector('.va-infobox');
+        box.className = 'va-infobox va-infobox--error';
+        document.getElementById('warrantyIndicatorTitle').textContent = '❌ Serial number not found';
+        document.getElementById('warrantyIndicatorText').textContent = 'Please verify the serial number on the product label.';
+      }
+    } catch { indicator.style.display = 'none'; }
+  }, 600);
+}
+
+/* Form submit → Dataverse Web API */
+async function submitTicket(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = Object.fromEntries(new FormData(form));
+  const payload = {
+    eq_serialnumber:    data.serialNumber,
+    eq_purchasedate:    data.purchaseDate,
+    eq_dealer:          data.dealer,
+    eq_issuetype:       data.issueType,
+    eq_priority:        data.priority,
+    eq_faultdescription:data.faultDescription,
+    eq_errorcode:       data.errorCode,
+    eq_operatinghours:  parseInt(data.operatingHours) || null,
+    eq_contactname:     data.contactName,
+    eq_email:           data.email,
+    eq_phone:           data.phone,
+    eq_contactmethod:   data.contactMethod,
+  };
+  const r = await fetch('/api/data/v9.2/eq_servicetickets', {
+    method: 'POST',
+    headers: {
+      'OData-MaxVersion': '4.0', 'OData-Version': '4.0',
+      'Content-Type': 'application/json', 'Accept': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(payload)
+  });
+  const created = await r.json();
+  form.style.display = 'none';
+  const conf = document.getElementById('ticketConfirmation');
+  conf.style.display = 'block';
+  document.getElementById('confirmedTicketNo').textContent =
+    created.eq_ticketnumber || 'EQ-' + Date.now();
+}
+</script>
+
+</body>
+</html>
+{% endif %}

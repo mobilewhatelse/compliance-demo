@@ -1,0 +1,92 @@
+name: eq_product
+displayName: EQ Product
+description: Welding equipment product models for vaBW EQ Online Services
+attributes:
+  - name: eq_productid
+    displayName: Product ID
+    type: Uniqueidentifier
+    isPrimaryKey: true
+
+  - name: eq_name
+    displayName: Product Name
+    type: String
+    maxLength: 200
+    required: true
+    example: "TERRA NX 400 PMC SteelDrive"
+
+  - name: eq_productcode
+    displayName: Product Code
+    type: String
+    maxLength: 50
+    required: true
+    example: "55.15.017"
+
+  - name: eq_category
+    displayName: Product Category
+    type: Picklist
+    options:
+      - value: 100000000
+        label: Inverter
+      - value: 100000001
+        label: MIG/MAG
+      - value: 100000002
+        label: Robotic
+      - value: 100000003
+        label: TIG
+      - value: 100000004
+        label: MMA
+
+  - name: eq_productline
+    displayName: Product Line
+    type: Picklist
+    options:
+      - value: 100000000
+        label: TERRA
+      - value: 100000001
+        label: URANOS
+      - value: 100000002
+        label: WF NX
+      - value: 100000003
+        label: URANOS NX
+
+  - name: eq_imageurl
+    displayName: Product Image URL
+    type: String
+    maxLength: 500
+
+  - name: eq_description
+    displayName: Description
+    type: Memo
+    maxLength: 2000
+
+  - name: eq_isactive
+    displayName: Active
+    type: Boolean
+    defaultValue: true
+
+  - name: eq_sortorder
+    displayName: Sort Order
+    type: Integer
+
+  - name: eq_metadata
+    displayName: Search Metadata
+    type: Memo
+    maxLength: 1000
+    description: Additional keywords/codes for search (e.g. product codes, aliases)
+
+tablePermissions:
+  - webRole: Anonymous
+    access: Read
+    scope: Global
+  - webRole: SalesPartner
+    access: Read
+    scope: Global
+  - webRole: ServicePartner
+    access: Read
+    scope: Global
+  - webRole: Integrator
+    access: Read
+    scope: Global
+  - webRole: Administrator
+    access: ReadWriteCreateDelete
+    scope: Global

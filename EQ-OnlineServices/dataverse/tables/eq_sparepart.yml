@@ -1,0 +1,152 @@
+name: eq_sparepart
+displayName: EQ Spare Part
+description: Spare parts catalogue for EQ welding equipment, with exploded diagram hotspot coordinates
+
+attributes:
+  - name: eq_sparepartid
+    displayName: Spare Part ID
+    type: Uniqueidentifier
+    isPrimaryKey: true
+
+  - name: eq_name
+    displayName: Part Name
+    type: String
+    maxLength: 200
+    required: true
+    example: "Main PCB Assembly TERRA NX 400"
+
+  - name: eq_partcode
+    displayName: Part Code
+    type: String
+    maxLength: 50
+    required: true
+    example: "SP-TRX-PCB-400"
+
+  - name: eq_product
+    displayName: Product
+    type: Lookup
+    relatedTable: eq_product
+    required: true
+    description: The welding machine this part belongs to
+
+  - name: eq_category
+    displayName: Part Category
+    type: Picklist
+    options:
+      - value: 100000000
+        label: Electronics / PCB
+      - value: 100000001
+        label: Wire Feed Components
+      - value: 100000002
+        label: Torch & Accessories
+      - value: 100000003
+        label: Cooling System
+      - value: 100000004
+        label: Power Components
+      - value: 100000005
+        label: Chassis & Housing
+      - value: 100000006
+        label: Connectors & Cables
+      - value: 100000007
+        label: Control Panel
+      - value: 100000008
+        label: Consumables
+      - value: 100000009
+        label: Safety Components
+
+  - name: eq_diagramref
+    displayName: Diagram Reference Number
+    type: String
+    maxLength: 10
+    description: Item number shown on the exploded diagram, e.g. "12", "3a"
+    example: "12"
+
+  - name: eq_hotspot_x
+    displayName: Diagram Hotspot X (%)
+    type: Decimal
+    minValue: 0
+    maxValue: 100
+    description: Horizontal position of click hotspot on the exploded diagram image, as % of image width
+
+  - name: eq_hotspot_y
+    displayName: Diagram Hotspot Y (%)
+    type: Decimal
+    minValue: 0
+    maxValue: 100
+    description: Vertical position of click hotspot on the exploded diagram image, as % of image height
+
+  - name: eq_diagramimage
+    displayName: Exploded Diagram Image URL
+    type: String
+    maxLength: 500
+    description: URL to the SVG or high-res PNG exploded diagram for this product; shared across all parts of the same product
+
+  - name: eq_listprice
+    displayName: List Price (EUR)
+    type: Money
+    precision: 2
+
+  - name: eq_currency
+    displayName: Currency
+    type: String
+    maxLength: 10
+    defaultValue: "EUR"
+
+  - name: eq_webshopurl
+    displayName: Webshop URL
+    type: String
+    maxLength: 500
+    description: Direct link to part in the vaBW webshop
+
+  - name: eq_availability
+    displayName: Availability
+    type: Picklist
+    options:
+      - value: 100000000
+        label: In Stock
+      - value: 100000001
+        label: Available (3–5 days)
+      - value: 100000002
+        label: On Order (2–4 weeks)
+      - value: 100000003
+        label: Discontinued
+
+  - name: eq_leadtimedays
+    displayName: Lead Time (days)
+    type: Integer
+
+  - name: eq_weight_kg
+    displayName: Weight (kg)
+    type: Decimal
+    precision: 3
+
+  - name: eq_isactive
+    displayName: Active
+    type: Boolean
+    defaultValue: true
+
+  - name: eq_notes
+    displayName: Notes
+    type: Memo
+    maxLength: 1000
+    description: Installation hints, compatibility notes, superseded-by part code
+
+tablePermissions:
+  # Sales Partners and above can view spare parts (pricing is Level B+)
+  - webRole: SalesPartner
+    access: Read
+    scope: Global
+
+  - webRole: ServicePartner
+    access: Read
+    scope: Global
+
+  - webRole: Integrator
+    access: Read
+    scope: Global
+
+  - webRole: Administrator
+    access: ReadWriteCreateDelete
+    scope: Global
+
+  # Anonymous users have no access — parts catalogue requires login

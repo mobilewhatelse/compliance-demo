@@ -1,0 +1,74 @@
+[
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000001",
+    "eq_name": "TERRA NX 400 PMC SteelDrive",
+    "eq_productcode": "55.15.017",
+    "eq_category": 100000001,
+    "eq_productline": 100000000,
+    "eq_sortorder": 1,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/terra-nx-400.png",
+    "eq_description": "The TERRA NX 400 PMC SteelDrive is the flagship MIG/MAG inverter welding machine for professional steel fabrication. With 400 A at 60% duty cycle and the advanced PMC (Pulse Multi Control) process, it delivers superior weld quality with minimal spatter. SteelDrive wire feed ensures consistent arc stability even with demanding wire types.",
+    "eq_metadata": "55.15.017 TERRA NX 400 PMC SteelDrive MIG MAG inverter 400A SteelDrive pulse"
+  },
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000002",
+    "eq_name": "TERRA NX 270",
+    "eq_productcode": "55.15.009",
+    "eq_category": 100000001,
+    "eq_productline": 100000000,
+    "eq_sortorder": 2,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/terra-nx-270.png",
+    "eq_description": "The TERRA NX 270 is a compact, portable MIG/MAG inverter designed for bodywork, light steel fabrication and maintenance welding. 270 A output with synergic programs for steel, stainless and aluminium. Ideal for workshop and on-site use.",
+    "eq_metadata": "55.15.009 TERRA NX 270 MIG MAG compact portable 270A synergic"
+  },
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000003",
+    "eq_name": "TERRA NX 500 CMT Pro",
+    "eq_productcode": "55.15.025",
+    "eq_category": 100000001,
+    "eq_productline": 100000000,
+    "eq_sortorder": 3,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/terra-nx-500-cmt.png",
+    "eq_description": "The TERRA NX 500 CMT Pro is the heavy-duty solution for industrial MIG/MAG and robotic welding applications. CMT (Cold Metal Transfer) process enables ultra-low-spatter welding of thin sheet metal and aluminium. 500 A output, dual wire feed, bus connectivity for robotic integration.",
+    "eq_metadata": "55.15.025 TERRA NX 500 CMT Pro MIG MAG robotic 500A CMT aluminium thin sheet"
+  },
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000004",
+    "eq_name": "URANOS NX 300 AC/DC",
+    "eq_productcode": "55.20.031",
+    "eq_category": 100000003,
+    "eq_productline": 100000003,
+    "eq_sortorder": 4,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/uranos-nx-300.png",
+    "eq_description": "The URANOS NX 300 AC/DC is a premium TIG inverter for demanding precision welding of aluminium, stainless steel and special alloys. AC/DC capability with digital pulse control, HF ignition and integrated water cooler connection. Preferred by aerospace and pressure vessel fabricators.",
+    "eq_metadata": "55.20.031 URANOS NX 300 AC DC TIG aluminium stainless precision pulse HF aerospace"
+  },
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000005",
+    "eq_name": "URANOS 2000 Synergic",
+    "eq_productcode": "55.20.015",
+    "eq_category": 100000001,
+    "eq_productline": 100000001,
+    "eq_sortorder": 5,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/uranos-2000.png",
+    "eq_description": "The URANOS 2000 Synergic is a versatile multi-process inverter supporting MIG/MAG, MMA and TIG lift-arc processes. Built-in synergic programs for all common wire/gas combinations. Robust die-cast housing rated IP23S for industrial environments.",
+    "eq_metadata": "55.20.015 URANOS 2000 Synergic multi-process MIG MAG MMA TIG lift-arc IP23S"
+  },
+  {
+    "eq_productid": "11111111-1111-1111-1111-000000000006",
+    "eq_name": "WF NX 4 Drive",
+    "eq_productcode": "55.30.004",
+    "eq_category": 100000001,
+    "eq_productline": 100000002,
+    "eq_sortorder": 6,
+    "eq_isactive": true,
+    "eq_imageurl": "/images/wf-nx-4.png",
+    "eq_description": "The WF NX 4 Drive is a 4-roll wire feeder designed for high-deposition MIG/MAG welding with heavy wire types (0.8–2.4 mm). Compatible with all TERRA NX power sources via digital bus connection. Motorised drive rolls with automatic pressure setting ensure consistent wire feed at up to 25 m/min.",
+    "eq_metadata": "55.30.004 WF NX 4 Drive wire feeder 4-roll high deposition 0.8 2.4mm TERRA NX"
+  }
+]

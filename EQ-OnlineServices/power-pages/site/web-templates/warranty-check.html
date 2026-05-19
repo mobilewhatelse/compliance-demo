@@ -1,0 +1,352 @@
+{% comment %}
+  EQ Online Services — Warranty Status Check
+  Design: voestalpine Böhler Welding brand system
+  Access: Level C (Service Partner) and above
+  URL: /warranty/check
+{% endcomment %}
+
+{% if user == null or user | has_role: 'SalesPartner' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Access Denied | EQ Online Services</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine Böhler Welding"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <div class="va-header__actions">
+      <a href="/login" class="va-btn va-btn--outline-white va-btn--sm">Login</a>
+      <a href="/register" class="va-btn va-btn--primary va-btn--sm">Register</a>
+    </div>
+  </div>
+</header>
+<section style="min-height:60vh; display:flex; align-items:center; justify-content:center; background:var(--va-light);">
+  <div style="text-align:center; max-width:480px; padding:48px 24px;">
+    <div style="width:64px; height:4px; background:var(--va-red); margin:0 auto 24px;"></div>
+    <h1 style="font-size:1.5rem; font-weight:800; color:var(--va-navy); margin-bottom:12px;">Service Partner Access Required</h1>
+    <p style="color:rgba(0,0,0,0.55); margin-bottom:28px;">
+      The Warranty Check tool is available for Service Partners and Administrators. Register or contact your account manager to upgrade your access.
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <a href="/login" class="va-btn va-btn--navy">Login</a>
+      <a href="/register" class="va-btn va-btn--primary">Register</a>
+    </div>
+  </div>
+</section>
+</body>
+</html>
+
+{% else %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Warranty Check | EQ Online Services</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine Böhler Welding"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <nav class="va-header__nav">
+      <a href="/">Products</a>
+      <a href="/warranty/check" class="active">Warranty</a>
+      <a href="/service-tickets">Service Tickets</a>
+      <a href="/spare-parts">Spare Parts</a>
+    </nav>
+    <div class="va-header__actions">
+      <span class="va-header__user-name">{{ user.fullname }}</span>
+      <span class="va-header__role-badge">{{ user.roles | first }}</span>
+      <a href="/logout" class="va-btn va-btn--outline-white va-btn--sm">Logout</a>
+    </div>
+  </div>
+</header>
+
+<!-- ══ BREADCRUMB ══ -->
+<div style="background:var(--va-light); border-bottom:1px solid rgba(0,0,0,0.08); padding:12px 0;">
+  <div class="va-container">
+    <nav style="font-size:13px; color:rgba(0,0,0,0.45);">
+      <a href="/" style="color:var(--va-navy); text-decoration:none;">Home</a>
+      <span style="margin:0 8px;">›</span>
+      <span>Warranty Check</span>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ PAGE HERO (compact) ══ -->
+<div style="background:var(--va-navy); padding:40px 0; border-bottom:3px solid var(--va-red);">
+  <div class="va-container">
+    <div style="font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--va-red); margin-bottom:8px;">Service Tools</div>
+    <h1 style="font-size:1.75rem; font-weight:800; color:var(--va-white); margin:0;">Warranty Status Check</h1>
+    <p style="color:rgba(255,255,255,0.60); margin-top:8px; font-size:15px;">
+      Enter a serial number to instantly verify warranty status and expiry date.
+    </p>
+  </div>
+</div>
+
+<!-- ══ CHECK FORM + RESULT ══ -->
+<section class="va-section va-section--gray">
+  <div class="va-container" style="max-width:720px;">
+
+    <!-- Serial Number Input -->
+    <div style="background:var(--va-white); padding:36px; margin-bottom:24px; border-top:3px solid var(--va-red);">
+      <form id="warrantyCheckForm" class="va-form" autocomplete="off">
+        <div class="va-form__group">
+          <label for="serialNumber" class="va-form__label">Serial Number</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text"
+                   id="serialNumber"
+                   name="serialNumber"
+                   class="va-form__input"
+                   style="flex:1; font-family:monospace; letter-spacing:1.5px; font-size:15px;"
+                   placeholder="e.g. TRX-2024-00123456"
+                   required maxlength="50"/>
+            <button type="submit" class="va-btn va-btn--primary" id="btnCheck">Check</button>
+          </div>
+          <div class="va-form__hint">Found on the product label or delivery documents.</div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Result Area -->
+    <div id="warrantyResult" style="display:none;">
+
+      <!-- Loading -->
+      <div id="resultLoading" style="display:none; background:var(--va-white); padding:40px; text-align:center;">
+        <div style="font-size:14px; color:rgba(0,0,0,0.45); letter-spacing:1px; text-transform:uppercase; font-weight:600;">Checking warranty status…</div>
+      </div>
+
+      <!-- Active -->
+      <div id="resultActive" style="display:none;">
+        <div style="background:var(--va-white); border-top:4px solid #059669; padding:32px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+            <div style="width:12px; height:12px; border-radius:50%; background:#059669; flex-shrink:0;"></div>
+            <div style="font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#059669;">Warranty Active</div>
+          </div>
+          <div class="va-warranty-card" style="display:grid; grid-template-columns:1fr 1fr; gap:0; margin-bottom:28px;">
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Product</div>
+              <div class="va-warranty-card__value" id="rProductName">—</div>
+            </div>
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Serial Number</div>
+              <div class="va-warranty-card__value" id="rSerialNo" style="font-family:monospace;">—</div>
+            </div>
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Purchase Date</div>
+              <div class="va-warranty-card__value" id="rPurchaseDate">—</div>
+            </div>
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Warranty Expires</div>
+              <div class="va-warranty-card__value" id="rExpiryDate" style="color:#059669; font-size:1.1rem; font-weight:800;">—</div>
+            </div>
+            <div class="va-warranty-card__item" style="grid-column:span 2;">
+              <div class="va-warranty-card__label">Remaining</div>
+              <div class="va-warranty-card__value" id="rDaysLeft" style="font-size:1.5rem; font-weight:800; color:var(--va-navy);">—</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button id="btnDownloadCert" class="va-btn va-btn--navy va-btn--sm">Download Certificate</button>
+            <a href="/service-tickets/new" class="va-btn va-btn--primary va-btn--sm">Open Service Ticket</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expired -->
+      <div id="resultExpired" style="display:none;">
+        <div style="background:var(--va-white); border-top:4px solid #D97706; padding:32px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+            <div style="width:12px; height:12px; border-radius:50%; background:#D97706; flex-shrink:0;"></div>
+            <div style="font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#D97706;">Warranty Expired</div>
+          </div>
+          <div class="va-warranty-card" style="display:grid; grid-template-columns:1fr 1fr; gap:0; margin-bottom:24px;">
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Product</div>
+              <div class="va-warranty-card__value" id="rExpProductName">—</div>
+            </div>
+            <div class="va-warranty-card__item">
+              <div class="va-warranty-card__label">Warranty Expired On</div>
+              <div class="va-warranty-card__value" id="rExpDate" style="color:#D97706; font-weight:800;">—</div>
+            </div>
+          </div>
+          <div class="va-infobox va-infobox--warning" style="margin-bottom:24px;">
+            The warranty period has ended. Out-of-warranty service is available — open a ticket to request a repair quote.
+          </div>
+          <a href="/service-tickets/new" class="va-btn va-btn--primary va-btn--sm">Open Service Ticket (Out of Warranty)</a>
+        </div>
+      </div>
+
+      <!-- Not Found -->
+      <div id="resultNotFound" style="display:none;">
+        <div style="background:var(--va-white); border-top:4px solid var(--va-red); padding:32px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:12px; height:12px; border-radius:50%; background:var(--va-red); flex-shrink:0;"></div>
+            <div style="font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--va-red);">Serial Number Not Found</div>
+          </div>
+          <p style="color:rgba(0,0,0,0.60); margin-bottom:20px; font-size:14px;">
+            No product was found with serial number <strong id="rNotFoundSN" style="font-family:monospace;"></strong>.
+            Please verify the number on the product label and try again.
+          </p>
+          <a href="/contact" class="va-link">Contact support if the problem persists →</a>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="resultError" style="display:none;">
+        <div class="va-infobox va-infobox--error">
+          A connection error occurred. Please try again or contact support.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- How to find serial number info strip -->
+    <div style="margin-top:32px; background:var(--va-navy); padding:24px 28px; display:flex; align-items:flex-start; gap:20px;">
+      <div style="font-size:28px; flex-shrink:0;">🔍</div>
+      <div>
+        <div style="font-size:13px; font-weight:700; color:var(--va-white); margin-bottom:6px; letter-spacing:0.5px;">WHERE TO FIND THE SERIAL NUMBER</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.60); line-height:1.6;">
+          The serial number is printed on the silver label on the back or side panel of the welding machine.
+          Format: <span style="font-family:monospace; color:rgba(255,255,255,0.85);">XXX-YYYY-NNNNNNNN</span>
+          (e.g. TRX-2024-00123456). It is also included in the original delivery documents.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer class="va-footer">
+  <div class="va-container">
+    <div class="va-footer__grid">
+      <div>
+        <div class="va-footer__brand">voestalpine Böhler Welding</div>
+        <div class="va-footer__tagline">Lasting Connections</div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Products</div>
+        <div class="va-footer__links">
+          <a href="/#products">All Products</a>
+          <a href="/#products">TERRA Series</a>
+          <a href="/#products">URANOS Series</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Support</div>
+        <div class="va-footer__links">
+          <a href="/warranty/check">Warranty Check</a>
+          <a href="/service-tickets">Service Tickets</a>
+          <a href="/spare-parts">Spare Parts</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Company</div>
+        <div class="va-footer__links">
+          <a href="https://www.voestalpine.com/welding" target="_blank">voestalpine.com/welding</a>
+          <a href="/register">Partner Registration</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="va-footer__bar">
+      <span>© 2025 voestalpine Böhler Welding GmbH. All rights reserved.</span>
+      <span><span class="va-footer__red">ONE STEP AHEAD.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const form = document.getElementById('warrantyCheckForm');
+const btnCheck = document.getElementById('btnCheck');
+
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const sn = document.getElementById('serialNumber').value.trim();
+  if (!sn) return;
+
+  showOnly('resultLoading');
+  btnCheck.disabled = true;
+  btnCheck.textContent = 'Checking…';
+
+  try {
+    const res = await fetch(
+      `/api/data/v9.2/eq_warranties?$filter=eq_serialnumber eq '${encodeURIComponent(sn)}'` +
+      `&$expand=eq_product($select=eq_name)` +
+      `&$select=eq_serialnumber,eq_purchasedate,eq_warrantyexpirydate`,
+      { headers: { 'OData-MaxVersion': '4.0', 'OData-Version': '4.0', 'Accept': 'application/json' } }
+    );
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+
+    if (!data.value || data.value.length === 0) {
+      document.getElementById('rNotFoundSN').textContent = sn;
+      showOnly('resultNotFound');
+      return;
+    }
+
+    const w = data.value[0];
+    const today = new Date();
+    const expiry = new Date(w.eq_warrantyexpirydate);
+    const msLeft = expiry - today;
+    const daysLeft = Math.ceil(msLeft / 86400000);
+
+    if (daysLeft > 0) {
+      document.getElementById('rProductName').textContent   = w['eq_product/eq_name'] || '—';
+      document.getElementById('rSerialNo').textContent      = w.eq_serialnumber;
+      document.getElementById('rPurchaseDate').textContent  = fmt(w.eq_purchasedate);
+      document.getElementById('rExpiryDate').textContent    = fmt(w.eq_warrantyexpirydate);
+      document.getElementById('rDaysLeft').textContent      = daysLeft + ' days remaining';
+      showOnly('resultActive');
+    } else {
+      document.getElementById('rExpProductName').textContent = w['eq_product/eq_name'] || '—';
+      document.getElementById('rExpDate').textContent        = fmt(w.eq_warrantyexpirydate);
+      showOnly('resultExpired');
+    }
+
+  } catch {
+    showOnly('resultError');
+  } finally {
+    btnCheck.disabled = false;
+    btnCheck.textContent = 'Check';
+  }
+});
+
+function showOnly(id) {
+  document.getElementById('warrantyResult').style.display = 'block';
+  ['resultLoading','resultActive','resultExpired','resultNotFound','resultError']
+    .forEach(n => document.getElementById(n).style.display = n === id ? 'block' : 'none');
+}
+
+function fmt(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+document.getElementById('btnDownloadCert')?.addEventListener('click', function() {
+  const sn = document.getElementById('rSerialNo').textContent;
+  window.open(`/api/warranty/certificate?serial=${encodeURIComponent(sn)}`, '_blank');
+});
+</script>
+
+</body>
+</html>
+{% endif %}

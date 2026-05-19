@@ -1,0 +1,162 @@
+name: eq_serviceticket
+displayName: EQ Service Ticket
+description: Service and warranty claim tickets submitted by Service Partners for welding equipment issues
+
+attributes:
+  - name: eq_serviceticketid
+    displayName: Service Ticket ID
+    type: Uniqueidentifier
+    isPrimaryKey: true
+
+  - name: eq_name
+    displayName: Ticket Number (auto)
+    type: String
+    maxLength: 50
+    description: Auto-generated ticket number, e.g. "ST-2025-004821"
+
+  - name: eq_serialnumber
+    displayName: Serial Number
+    type: String
+    maxLength: 50
+    required: true
+    example: "TRX-2024-00123456"
+
+  - name: eq_product
+    displayName: Product
+    type: Lookup
+    relatedTable: eq_product
+
+  - name: eq_warranty
+    displayName: Warranty Record
+    type: Lookup
+    relatedTable: eq_warranty
+    description: Populated automatically when serial number resolves to a warranty record
+
+  - name: eq_isunderwarranty
+    displayName: Under Warranty
+    type: Boolean
+    description: Snapshot at ticket creation time — true if warranty was active when ticket was opened
+
+  - name: eq_issuetype
+    displayName: Issue Type
+    type: Picklist
+    required: true
+    options:
+      - value: 100000000
+        label: No Power / Won't Start
+      - value: 100000001
+        label: Arc Instability
+      - value: 100000002
+        label: Wire Feed Problem
+      - value: 100000003
+        label: Overheating / Thermal Shutdown
+      - value: 100000004
+        label: Display / Control Panel Fault
+      - value: 100000005
+        label: Gas / Water Leak
+      - value: 100000006
+        label: Physical Damage
+      - value: 100000007
+        label: Firmware / Software Issue
+      - value: 100000008
+        label: Other
+
+  - name: eq_priority
+    displayName: Priority
+    type: Picklist
+    required: true
+    options:
+      - value: 100000000
+        label: Low
+      - value: 100000001
+        label: Medium
+      - value: 100000002
+        label: High — Machine Down
+      - value: 100000003
+        label: Critical — Production Stopped
+
+  - name: eq_faultdescription
+    displayName: Fault Description
+    type: Memo
+    maxLength: 4000
+    required: true
+
+  - name: eq_errorcode
+    displayName: Error Code (if displayed)
+    type: String
+    maxLength: 50
+
+  - name: eq_ticketstatus
+    displayName: Ticket Status
+    type: Picklist
+    options:
+      - value: 100000000
+        label: Open
+      - value: 100000001
+        label: In Review
+      - value: 100000002
+        label: Parts Ordered
+      - value: 100000003
+        label: Repair In Progress
+      - value: 100000004
+        label: Awaiting Customer Action
+      - value: 100000005
+        label: Resolved
+      - value: 100000006
+        label: Closed
+
+  - name: eq_contactname
+    displayName: Contact Name
+    type: String
+    maxLength: 200
+    required: true
+
+  - name: eq_contactemail
+    displayName: Contact Email
+    type: String
+    maxLength: 200
+    required: true
+
+  - name: eq_contactphone
+    displayName: Contact Phone
+    type: String
+    maxLength: 50
+
+  - name: eq_companyname
+    displayName: Company Name
+    type: String
+    maxLength: 200
+
+  - name: eq_submittedby
+    displayName: Submitted By (Portal User)
+    type: Lookup
+    relatedTable: contact
+    description: Power Pages contact linked to the submitting user
+
+  - name: eq_submittedon
+    displayName: Submitted On
+    type: DateTime
+
+  - name: eq_resolvedon
+    displayName: Resolved On
+    type: DateTime
+
+  - name: eq_internalcomments
+    displayName: Internal Comments
+    type: Memo
+    maxLength: 4000
+    description: Not visible to portal users — for internal staff only
+
+tablePermissions:
+  # Service Partners see only their own tickets (contact scope)
+  - webRole: ServicePartner
+    access: ReadWriteCreate
+    scope: Contact
+    contactRelationship: eq_submittedby
+
+  # Administrators see all tickets
+  - webRole: Administrator
+    access: ReadWriteCreateDelete
+    scope: Global
+
+  # SalesPartner, Integrator, Anonymous — no access

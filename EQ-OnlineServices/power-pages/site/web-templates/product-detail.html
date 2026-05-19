@@ -1,0 +1,287 @@
+{% comment %}
+  EQ Online Services — Product Detail Page
+  Design: voestalpine Böhler Welding brand system
+  Access: Public (Level A) + role-gated document tabs
+{% endcomment %}
+
+{% assign product_code = request.params['productcode'] | url_decode %}
+{% assign product = entities['eq_product'] | where: 'eq_productcode', product_code | first %}
+
+{% if product == null %}
+  {% include 'va-404' %}
+{% else %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ product.eq_name }} | EQ Online Services</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine Böhler Welding"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <nav class="va-header__nav">
+      <a href="/">Products</a>
+      {% if user %}
+      <a href="/warranty/check">Warranty</a>
+      <a href="/service-tickets">Service Tickets</a>
+      <a href="/spare-parts">Spare Parts</a>
+      {% endif %}
+    </nav>
+    <div class="va-header__actions">
+      {% if user %}
+        <span class="va-header__user-name">{{ user.fullname }}</span>
+        <span class="va-header__role-badge">{{ user.roles | first }}</span>
+        <a href="/logout" class="va-btn va-btn--outline-white va-btn--sm">Logout</a>
+      {% else %}
+        <a href="/login"    class="va-btn va-btn--outline-white va-btn--sm">Login</a>
+        <a href="/register" class="va-btn va-btn--primary va-btn--sm">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ══ BREADCRUMB ══ -->
+<div style="background:var(--va-light); border-bottom:1px solid rgba(0,0,0,0.08); padding:12px 0;">
+  <div class="va-container">
+    <nav style="font-size:13px; color:rgba(0,0,0,0.45);">
+      <a href="/" style="color:var(--va-navy); text-decoration:none;">Home</a>
+      <span style="margin:0 8px;">›</span>
+      <a href="/#products" style="color:var(--va-navy); text-decoration:none;">Products</a>
+      <span style="margin:0 8px;">›</span>
+      <span>{{ product.eq_name }}</span>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ PRODUCT HEADER ══ -->
+<section style="background:var(--va-white); padding:48px 0; border-bottom:1px solid rgba(0,0,0,0.08);">
+  <div class="va-container">
+    <div style="display:grid; grid-template-columns:320px 1fr; gap:48px; align-items:start;">
+
+      <div style="background:var(--va-light); aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+        <img src="{{ product.eq_imageurl | default: '/images/eq-placeholder.png' }}"
+             alt="{{ product.eq_name }}"
+             style="max-width:100%; max-height:100%; object-fit:contain; padding:24px;"/>
+      </div>
+
+      <div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--va-red); margin-bottom:8px;">
+          {{ product.eq_productline }}
+        </div>
+        <h1 style="font-size:2rem; font-weight:800; color:var(--va-navy); margin-bottom:8px; line-height:1.1;">
+          {{ product.eq_name }}
+        </h1>
+        <div style="font-size:13px; color:rgba(0,0,0,0.45); font-weight:600; letter-spacing:1px; margin-bottom:20px; font-family:monospace;">
+          {{ product.eq_productcode }}
+        </div>
+        <p style="color:rgba(0,0,0,0.65); line-height:1.7; margin-bottom:28px; max-width:560px;">
+          {{ product.eq_description }}
+        </p>
+
+        {% if user == null %}
+        <div style="background:var(--va-navy); border-left:4px solid var(--va-red); padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:var(--va-white); margin-bottom:4px;">REGISTER FOR FULL ACCESS</div>
+            <div style="font-size:13px; color:rgba(255,255,255,0.60);">Service Manuals, Firmware, Price Books and more — available after registration.</div>
+          </div>
+          <a href="/register" class="va-btn va-btn--primary va-btn--sm" style="white-space:nowrap;">Register Free</a>
+        </div>
+        {% endif %}
+
+        {% if user %}
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          {% if user | has_role: 'ServicePartner' or user | has_role: 'Administrator' %}
+          <a href="/warranty/check?serial=" class="va-btn va-btn--navy va-btn--sm">Warranty Check</a>
+          <a href="/service-tickets/new?product={{ product.eq_productcode | url_encode }}" class="va-btn va-btn--outline va-btn--sm">Open Service Ticket</a>
+          {% endif %}
+          {% if user | has_role: 'SalesPartner' or user | has_role: 'ServicePartner' or user | has_role: 'Administrator' %}
+          <a href="/spare-parts?product={{ product.eq_productcode | url_encode }}" class="va-btn va-btn--outline va-btn--sm">Find Spare Parts</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ DOCUMENT TABS ══ -->
+<section class="va-section va-section--gray">
+  <div class="va-container">
+
+    {% comment %} Fetch documents for this product, filtered by access level {% endcomment %}
+    {% assign all_docs = entities['eq_document']
+        | where: 'eq_product', product.eq_productid
+        | where: 'eq_isactive', true
+        | sort: 'eq_documenttype' %}
+
+    {% if user == null %}
+      {% assign visible_docs = all_docs | where: 'eq_accesslevel', 100000000 %}
+    {% elsif user | has_role: 'Administrator' %}
+      {% assign visible_docs = all_docs %}
+    {% elsif user | has_role: 'ServicePartner' %}
+      {% assign visible_docs = all_docs | where_exp: 'doc', 'doc.eq_accesslevel <= 100000002' %}
+    {% elsif user | has_role: 'Integrator' %}
+      {% assign visible_docs = all_docs | where_exp: 'doc', 'doc.eq_accesslevel == 100000000 or doc.eq_accesslevel == 100000003' %}
+    {% elsif user | has_role: 'SalesPartner' %}
+      {% assign visible_docs = all_docs | where_exp: 'doc', 'doc.eq_accesslevel <= 100000001' %}
+    {% else %}
+      {% assign visible_docs = all_docs | where: 'eq_accesslevel', 100000000 %}
+    {% endif %}
+
+    {% assign doc_types = visible_docs | map: 'eq_documenttype_label' | uniq | sort %}
+
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Documentation</div>
+      <h2 class="va-section-header__title">Product Documents</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+
+    {% if visible_docs.size == 0 %}
+    <div style="text-align:center; padding:64px 24px; background:var(--va-white);">
+      <div style="font-size:48px; margin-bottom:16px;">📂</div>
+      <div style="font-size:16px; font-weight:700; color:var(--va-navy); margin-bottom:8px;">No documents available</div>
+      <div style="font-size:14px; color:rgba(0,0,0,0.50); margin-bottom:24px;">
+        {% if user == null %}Register to access product documents.
+        {% else %}No documents have been published for your access level yet.{% endif %}
+      </div>
+      {% if user == null %}
+      <a href="/register" class="va-btn va-btn--primary">Register for Access</a>
+      {% endif %}
+    </div>
+    {% else %}
+
+    <!-- Tab Navigation -->
+    <div class="va-tabs" role="tablist">
+      {% for type in doc_types %}
+      <button class="va-tab {% if forloop.first %}va-tab--active{% endif %}"
+              role="tab"
+              data-target="tab-{{ type | slugify }}">
+        {{ type }}
+        <span class="va-tab__count">{{ visible_docs | where: 'eq_documenttype_label', type | size }}</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Tab Content -->
+    {% for type in doc_types %}
+    <div class="va-tab-panel {% if forloop.first %}va-tab-panel--active{% endif %}"
+         id="tab-{{ type | slugify }}"
+         role="tabpanel">
+
+      <div class="va-doc-list">
+        {% assign typed_docs = visible_docs | where: 'eq_documenttype_label', type %}
+        {% for doc in typed_docs %}
+        <div class="va-doc-item">
+          <div class="va-doc-item__icon">
+            {% case doc.eq_filetype_label %}
+              {% when 'PDF' %}📄
+              {% when 'Video (MP4/YouTube)' %}🎬
+              {% when 'Software File' %}💾
+              {% else %}📎
+            {% endcase %}
+          </div>
+          <div class="va-doc-item__info">
+            <div class="va-doc-item__title">{{ doc.eq_name }}</div>
+            <div class="va-doc-item__meta">
+              {{ doc.eq_language }}&nbsp;·&nbsp;{{ doc.eq_version }}&nbsp;·&nbsp;{{ doc.eq_publishdate | date: '%b %Y' }}
+            </div>
+          </div>
+          <a href="{{ doc.eq_fileurl }}"
+             class="va-btn va-btn--primary va-btn--sm"
+             target="_blank" rel="noopener"
+             {% unless doc.eq_filetype_label == 'Video (MP4/YouTube)' %}download{% endunless %}>
+            {% if doc.eq_filetype_label == 'Video (MP4/YouTube)' %}Watch{% else %}Download{% endif %}
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- ══ Q&A SECTION (authenticated) ══ -->
+{% if user %}
+<section class="va-section">
+  <div class="va-container" style="max-width:800px;">
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Support</div>
+      <h2 class="va-section-header__title">Questions & Answers</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+    {% include 'va-qa-widget' with product: product %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ FOOTER ══ -->
+<footer class="va-footer">
+  <div class="va-container">
+    <div class="va-footer__grid">
+      <div>
+        <div class="va-footer__brand">voestalpine Böhler Welding</div>
+        <div class="va-footer__tagline">Lasting Connections</div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Products</div>
+        <div class="va-footer__links">
+          <a href="/#products">All Products</a>
+          <a href="/#products">TERRA Series</a>
+          <a href="/#products">URANOS Series</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Support</div>
+        <div class="va-footer__links">
+          <a href="/warranty/check">Warranty Check</a>
+          <a href="/service-tickets">Service Tickets</a>
+          <a href="/spare-parts">Spare Parts</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Company</div>
+        <div class="va-footer__links">
+          <a href="https://www.voestalpine.com/welding" target="_blank">voestalpine.com/welding</a>
+          <a href="/register">Partner Registration</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="va-footer__bar">
+      <span>© 2025 voestalpine Böhler Welding GmbH. All rights reserved.</span>
+      <span><span class="va-footer__red">ONE STEP AHEAD.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.va-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const target = this.dataset.target;
+    document.querySelectorAll('.va-tab').forEach(t => t.classList.remove('va-tab--active'));
+    document.querySelectorAll('.va-tab-panel').forEach(p => p.classList.remove('va-tab-panel--active'));
+    this.classList.add('va-tab--active');
+    document.getElementById(target).classList.add('va-tab-panel--active');
+  });
+});
+</script>
+
+</body>
+</html>
+
+{% endif %}

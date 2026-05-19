@@ -1,0 +1,33 @@
+webRoles:
+  - name: Anonymous
+    displayName: Public (Level A)
+    description: Public access - User Manuals, TDS, Brochures, Product Videos
+    isDefault: true
+    isAuthenticated: false
+
+  - name: SalesPartner
+    displayName: Sales Partner (Level B)
+    description: Registered Sales Partner - adds Price Books, POD Guidelines, Sales Initiatives, Testimonials
+    isDefault: false
+    isAuthenticated: true
+    registrationRequiresApproval: true
+
+  - name: ServicePartner
+    displayName: Service Partner (Level C)
+    description: Certified Service Partner - adds Service Manuals, Firmware, Welding Programs, Warranty Tools, Service Tickets
+    isDefault: false
+    isAuthenticated: true
+    registrationRequiresApproval: true
+
+  - name: Integrator
+    displayName: Integrator (Level D)
+    description: System Integrator - sees Public content plus Integrator-specific content
+    isDefault: false
+    isAuthenticated: true
+    registrationRequiresApproval: true
+
+  - name: Administrator
+    displayName: vaBW Administrator
+    description: Internal vaBW staff - full access to all content and management
+    isDefault: false
+    isAuthenticated: true

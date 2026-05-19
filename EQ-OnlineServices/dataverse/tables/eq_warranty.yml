@@ -1,0 +1,99 @@
+name: eq_warranty
+displayName: EQ Warranty
+description: Warranty records for registered welding equipment — links serial number to product and tracks warranty period
+
+attributes:
+  - name: eq_warrantyid
+    displayName: Warranty ID
+    type: Uniqueidentifier
+    isPrimaryKey: true
+
+  - name: eq_name
+    displayName: Warranty Name (auto)
+    type: String
+    maxLength: 200
+    description: Auto-generated, e.g. "TRX-2024-00123456 — TERRA NX 400"
+
+  - name: eq_serialnumber
+    displayName: Serial Number
+    type: String
+    maxLength: 50
+    required: true
+    example: "TRX-2024-00123456"
+
+  - name: eq_product
+    displayName: Product
+    type: Lookup
+    relatedTable: eq_product
+    required: true
+
+  - name: eq_purchasedate
+    displayName: Purchase Date
+    type: DateTime
+    format: DateOnly
+    required: true
+
+  - name: eq_warrantyexpirydate
+    displayName: Warranty Expiry Date
+    type: DateTime
+    format: DateOnly
+    required: true
+
+  - name: eq_warrantystatus
+    displayName: Warranty Status
+    type: Picklist
+    options:
+      - value: 100000000
+        label: Active
+      - value: 100000001
+        label: Expired
+      - value: 100000002
+        label: Voided
+
+  - name: eq_warrantytype
+    displayName: Warranty Type
+    type: Picklist
+    options:
+      - value: 100000000
+        label: Standard (24 months)
+      - value: 100000001
+        label: Extended (36 months)
+      - value: 100000002
+        label: On-Site (12 months)
+
+  - name: eq_dealercontact
+    displayName: Dealer / Contact
+    type: String
+    maxLength: 200
+
+  - name: eq_country
+    displayName: Country
+    type: String
+    maxLength: 100
+
+  - name: eq_certificateurl
+    displayName: Certificate PDF URL
+    type: String
+    maxLength: 500
+    description: Link to pre-generated warranty certificate PDF in SharePoint
+
+  - name: eq_notes
+    displayName: Notes
+    type: Memo
+    maxLength: 2000
+
+tablePermissions:
+  # Service Partners and above can read warranty records (needed for warranty check tool)
+  - webRole: ServicePartner
+    access: Read
+    scope: Global
+
+  - webRole: Integrator
+    access: Read
+    scope: Global
+
+  - webRole: Administrator
+    access: ReadWriteCreateDelete
+    scope: Global
+
+  # SalesPartner and Anonymous have NO access — warranty data is Level C+

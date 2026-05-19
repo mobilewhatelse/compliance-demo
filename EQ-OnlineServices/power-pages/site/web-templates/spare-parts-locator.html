@@ -1,0 +1,518 @@
+{% comment %}
+  EQ Online Services — Spare Parts Locator (MUST HAVE)
+  Access: Level B (Sales Partner) and above
+  URL: /spare-parts
+  Flow:
+    1. Enter Serial Number → auto-identifies product model
+    2. Show exploded diagram with clickable hotspots
+    3. Select part → shows code, description, price + webshop link
+{% endcomment %}
+
+{% if user == null %}
+{% include 'va-access-denied' with required: 'Sales Partner' %}
+{% else %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spare Parts Locator | EQ Online Services</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <nav class="va-header__nav">
+      <a href="/">Products</a>
+      <a href="/warranty/check">Warranty</a>
+      <a href="/service-tickets">Service Tickets</a>
+      <a href="/spare-parts" class="active">Spare Parts</a>
+    </nav>
+    <div class="va-header__actions">
+      <span class="va-header__user-name">{{ user.fullname }}</span>
+      <span class="va-header__role-badge">{{ user.roles | first }}</span>
+      <a href="/logout" class="va-btn va-btn--outline-white va-btn--sm">Logout</a>
+    </div>
+  </div>
+</header>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="va-page-header">
+  <div class="va-container">
+    <div class="va-page-header__eyebrow">Service & Support</div>
+    <h1 class="va-page-header__title">Spare Parts Locator</h1>
+    <p class="va-page-header__subtitle">
+      Enter a serial number to browse the exploded view and identify the exact spare part you need
+    </p>
+  </div>
+</div>
+
+<!-- ══ BREADCRUMB ══ -->
+<div class="va-breadcrumb">
+  <div class="va-container">
+    <div class="va-breadcrumb__inner">
+      <a href="/">Home</a>
+      <span class="va-breadcrumb__sep">›</span>
+      <span class="va-breadcrumb__current">Spare Parts Locator</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SERIAL LOOKUP ══ -->
+<section class="va-search-bar">
+  <div class="va-container">
+    <div style="display:flex; gap:0; max-width:680px; margin:0 auto;">
+      <input type="text"
+             id="spSerial"
+             class="va-search-input"
+             placeholder="Enter Serial Number — e.g. TRX-2024-00123456"
+             maxlength="50"
+             oninput="serialLookupDebounced(this.value)"/>
+      <button class="va-search-btn" onclick="serialLookup(document.getElementById('spSerial').value)">
+        Find Parts
+      </button>
+    </div>
+    <p style="text-align:center; margin-top:12px; font-size:13px; color:rgba(255,255,255,0.55);">
+      Alternatively, browse by product model below
+    </p>
+  </div>
+</section>
+
+<!-- ══ PRODUCT PICKER (fallback if no serial) ══ -->
+<section class="va-section va-section--gray" id="productPickerSection">
+  <div class="va-container">
+
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Browse by Model</div>
+      <h2 class="va-section-header__title">Select a Product</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+
+    <div class="va-product-grid" id="productPickerGrid">
+      {% assign products = entities['eq_product'] | where: 'eq_isactive', true | sort: 'eq_sortorder' %}
+      {% for p in products %}
+      <div class="va-product-card" onclick="loadPartsForProduct('{{ p.eq_productid }}', '{{ p.eq_name }}', '{{ p.eq_productcode }}')" style="cursor:pointer;">
+        <div class="va-product-card__image">
+          <img src="{{ p.eq_imageurl | default: '/images/eq-placeholder.png' }}" alt="{{ p.eq_name }}" loading="lazy"/>
+        </div>
+        <div class="va-product-card__body">
+          <div class="va-product-card__line">{{ p.eq_productline }}</div>
+          <div class="va-product-card__name">{{ p.eq_name }}</div>
+          <div class="va-product-card__code">{{ p.eq_productcode }}</div>
+          <span class="va-link va-product-card__cta">View Parts</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ PARTS VIEWER (shown after product selected) ══ -->
+<section class="va-section" id="partsViewerSection" style="display:none;">
+  <div class="va-container">
+
+    <!-- Product Info Bar -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--va-red); margin-bottom:4px;">
+          Selected Product
+        </div>
+        <h2 id="partsProductName" style="font-size:1.5rem; color:var(--va-navy); margin-bottom:2px;"></h2>
+        <span id="partsProductCode" style="font-size:13px; color:var(--va-text-light);"></span>
+      </div>
+      <button onclick="resetPartsView()" class="va-btn va-btn--outline va-btn--sm">
+        ← Change Product
+      </button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 420px; gap:32px; align-items:start;">
+
+      <!-- LEFT: Exploded Diagram -->
+      <div>
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--va-text-light); margin-bottom:12px;">
+          Exploded View — Click a number to select a part
+        </div>
+
+        <div class="va-parts-diagram" id="partsDiagram" style="position:relative;">
+          <img id="partsImage"
+               src=""
+               alt="Exploded view"
+               style="width:100%; display:block;"/>
+
+          <!-- Hotspots injected by JS -->
+          <div id="hotspotsLayer"></div>
+
+          <!-- Part detail popup -->
+          <div id="partPopup" class="va-parts-detail" style="display:none; top:40%; left:50%;">
+            <button onclick="document.getElementById('partPopup').style.display='none'"
+                    style="float:right; background:none; border:none; font-size:18px; cursor:pointer; color:var(--va-text-light);">×</button>
+            <div class="va-parts-detail__code" id="popupCode"></div>
+            <div class="va-parts-detail__name" id="popupName"></div>
+            <div class="va-parts-detail__price" id="popupPrice"></div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="va-btn va-btn--primary va-btn--sm" onclick="addToCart()">
+                Add to Cart
+              </button>
+              <a id="popupWebshopLink" href="#" target="_blank"
+                 class="va-btn va-btn--outline va-btn--sm">
+                Webshop →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Parts List -->
+      <div>
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--va-text-light); margin-bottom:12px;">
+          Parts List
+        </div>
+
+        <!-- Search within parts -->
+        <div style="display:flex; gap:0; margin-bottom:16px;">
+          <input type="text"
+                 id="partsSearchInput"
+                 class="va-search-input"
+                 style="border:1px solid var(--va-border); font-size:13px;"
+                 placeholder="Search part name or code..."
+                 oninput="filterParts(this.value)"/>
+        </div>
+
+        <!-- Cart summary -->
+        <div id="cartSummary" style="display:none; background:var(--va-light); border:1px solid var(--va-border); border-top:3px solid var(--va-red); padding:16px; margin-bottom:16px;">
+          <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--va-navy); margin-bottom:8px;">
+            Parts Selection (<span id="cartCount">0</span>)
+          </div>
+          <div id="cartItems" style="display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--va-text-mid); margin-bottom:12px;"></div>
+          <a id="cartWebshopBtn" href="#" target="_blank" class="va-btn va-btn--primary va-btn--sm" style="width:100%; justify-content:center;">
+            Order in Webshop →
+          </a>
+        </div>
+
+        <!-- Parts table -->
+        <div class="va-table-wrap" style="border:1px solid var(--va-border);">
+          <table class="va-table" id="partsTable">
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th>Part Code</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody id="partsTableBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="noPartsMsg" class="va-empty" style="display:none; padding:32px;">
+          <div class="va-empty__icon">🔍</div>
+          <div class="va-empty__text">No parts found for this search.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ INFO SECTION ══ -->
+<section class="va-section va-section--navy" style="padding:48px 0;">
+  <div class="va-container">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:32px;">
+      <div style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:12px;">📦</div>
+        <div style="font-weight:700; color:var(--va-white); margin-bottom:6px;">Genuine OEM Parts</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.60);">All parts sourced directly from voestalpine Böhler Welding</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:12px;">🚚</div>
+        <div style="font-weight:700; color:var(--va-white); margin-bottom:6px;">Fast Delivery</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.60);">Express shipping available for critical repair parts</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:12px;">🛡️</div>
+        <div style="font-weight:700; color:var(--va-white); margin-bottom:6px;">Quality Guaranteed</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.60);">12-month warranty on all spare parts</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:12px;">📞</div>
+        <div style="font-weight:700; color:var(--va-white); margin-bottom:6px;">Expert Support</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.60);">Can't find your part? Contact our service team</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer class="va-footer">
+  <div class="va-container">
+    <div class="va-footer__grid">
+      <div>
+        <div class="va-footer__brand">voestalpine Böhler Welding</div>
+        <div class="va-footer__tagline">Lasting Connections</div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Products</div>
+        <div class="va-footer__links">
+          <a href="/products">All Products</a>
+          <a href="/?line=TERRA">TERRA Series</a>
+          <a href="/?line=URANOS">URANOS Series</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Support</div>
+        <div class="va-footer__links">
+          <a href="/warranty/check">Warranty Check</a>
+          <a href="/service-tickets">Service Tickets</a>
+          <a href="/spare-parts">Spare Parts</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Company</div>
+        <div class="va-footer__links">
+          <a href="https://www.voestalpine.com/welding" target="_blank">voestalpine.com/welding</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="va-footer__bar">
+      <span>© 2025 voestalpine Böhler Welding GmbH. All rights reserved.</span>
+      <span><span class="va-footer__red">ONE STEP AHEAD.</span></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ JAVASCRIPT ══ -->
+<script>
+/* ── State ── */
+let currentProduct = null;
+let allParts       = [];
+let cart           = [];
+
+/* ── Serial Lookup ── */
+let debounceTimer;
+function serialLookupDebounced(val) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => serialLookup(val), 700);
+}
+
+async function serialLookup(sn) {
+  if (!sn || sn.length < 8) return;
+  try {
+    const r = await fetch(
+      `/api/data/v9.2/eq_warranties?$filter=eq_serialnumber eq '${encodeURIComponent(sn)}'&$expand=eq_product($select=eq_productid,eq_name,eq_productcode,eq_imageurl)`,
+      { headers: { 'OData-MaxVersion': '4.0', 'OData-Version': '4.0', Accept: 'application/json' } }
+    );
+    const d = await r.json();
+    if (d.value && d.value.length > 0) {
+      const w = d.value[0];
+      loadPartsForProduct(
+        w['eq_product/eq_productid'],
+        w['eq_product/eq_name'],
+        w['eq_product/eq_productcode'],
+        w['eq_product/eq_imageurl']
+      );
+    } else {
+      alert('Serial number not found. Please select a product from the list below.');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/* ── Load Parts for Product ── */
+async function loadPartsForProduct(productId, productName, productCode, imageUrl) {
+  currentProduct = { id: productId, name: productName, code: productCode, image: imageUrl };
+
+  document.getElementById('productPickerSection').style.display = 'none';
+  document.getElementById('partsViewerSection').style.display  = 'block';
+  document.getElementById('partsProductName').textContent = productName;
+  document.getElementById('partsProductCode').textContent = 'Product Code: ' + productCode;
+
+  /* Load exploded diagram image */
+  const img = document.getElementById('partsImage');
+  img.src = imageUrl
+    ? imageUrl.replace('.png', '-exploded.png').replace('.jpg', '-exploded.jpg')
+    : `/images/exploded/${productCode}.png`;
+
+  /* Fetch spare parts from Dataverse */
+  try {
+    const r = await fetch(
+      `/api/data/v9.2/eq_spareparts?$filter=eq_product/eq_productid eq ${productId}&$orderby=eq_partnumber asc&$select=eq_sparepartid,eq_partnumber,eq_name,eq_price,eq_diagramposition,eq_webshopurl,eq_isavailable`,
+      { headers: { 'OData-MaxVersion': '4.0', 'OData-Version': '4.0', Accept: 'application/json' } }
+    );
+    const d = await r.json();
+    allParts = d.value || [];
+  } catch {
+    /* Demo data when API not yet connected */
+    allParts = [
+      { eq_sparepartid:'1', eq_partnumber:'09.01.011', eq_name:'Front Panel Assembly',       eq_price:142.50, eq_diagramposition:{x:15,y:12}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'2', eq_partnumber:'08.22.012', eq_name:'Wire Feed Motor 24V',         eq_price:287.00, eq_diagramposition:{x:45,y:20}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'3', eq_partnumber:'01.02.013', eq_name:'Main PCB Control Board',      eq_price:498.00, eq_diagramposition:{x:70,y:15}, eq_webshopurl:'#', eq_isavailable:false },
+      { eq_sparepartid:'4', eq_partnumber:'49.07.526', eq_name:'Cooling Fan 120mm',           eq_price:38.90,  eq_diagramposition:{x:30,y:45}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'5', eq_partnumber:'15.14.501', eq_name:'Torch Connection Socket',     eq_price:62.00,  eq_diagramposition:{x:60,y:40}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'6', eq_partnumber:'24.05.240', eq_name:'Wire Feeder Pressure Roller', eq_price:24.50,  eq_diagramposition:{x:20,y:65}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'7', eq_partnumber:'24.01.006', eq_name:'Inlet Guide Tube',            eq_price:12.80,  eq_diagramposition:{x:50,y:60}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'8', eq_partnumber:'73.11.026', eq_name:'Power Switch 16A',            eq_price:31.00,  eq_diagramposition:{x:80,y:55}, eq_webshopurl:'#', eq_isavailable:true  },
+      { eq_sparepartid:'9', eq_partnumber:'20.06.080', eq_name:'Gas Solenoid Valve',          eq_price:54.00,  eq_diagramposition:{x:35,y:75}, eq_webshopurl:'#', eq_isavailable:false },
+      { eq_sparepartid:'10',eq_partnumber:'49.07.497', eq_name:'Encoder Knob Assembly',       eq_price:29.90,  eq_diagramposition:{x:65,y:70}, eq_webshopurl:'#', eq_isavailable:true  },
+    ];
+  }
+
+  renderHotspots();
+  renderPartsTable(allParts);
+  cart = [];
+  updateCart();
+}
+
+/* ── Render Diagram Hotspots ── */
+function renderHotspots() {
+  const layer = document.getElementById('hotspotsLayer');
+  layer.innerHTML = '';
+  allParts.forEach((part, i) => {
+    if (!part.eq_diagramposition) return;
+    const { x, y } = part.eq_diagramposition;
+    const dot = document.createElement('div');
+    dot.className   = 'va-parts-hotspot';
+    dot.style.left  = x + '%';
+    dot.style.top   = y + '%';
+    dot.textContent = i + 1;
+    dot.title       = part.eq_name;
+    dot.addEventListener('click', () => showPartPopup(part, x, y));
+    layer.appendChild(dot);
+  });
+}
+
+/* ── Part Popup ── */
+function showPartPopup(part, x, y) {
+  const popup = document.getElementById('partPopup');
+  document.getElementById('popupCode').textContent  = part.eq_partnumber;
+  document.getElementById('popupName').textContent  = part.eq_name;
+  document.getElementById('popupPrice').textContent =
+    part.eq_isavailable
+      ? '€ ' + part.eq_price.toFixed(2)
+      : 'On Request';
+  document.getElementById('popupWebshopLink').href  = part.eq_webshopurl || '#';
+  popup.style.left    = Math.min(x + 2, 55) + '%';
+  popup.style.top     = Math.min(y + 2, 60) + '%';
+  popup.style.display = 'block';
+  popup._currentPart  = part;
+
+  /* Highlight row */
+  document.querySelectorAll('.va-parts-table-row').forEach(r => r.classList.remove('selected'));
+  document.querySelector(`[data-partid="${part.eq_sparepartid}"]`)?.classList.add('selected');
+}
+
+/* ── Render Parts Table ── */
+function renderPartsTable(parts) {
+  const tbody = document.getElementById('partsTableBody');
+  tbody.innerHTML = '';
+  if (parts.length === 0) {
+    document.getElementById('noPartsMsg').style.display = 'block';
+    document.getElementById('partsTable').style.display = 'none';
+    return;
+  }
+  document.getElementById('noPartsMsg').style.display  = 'none';
+  document.getElementById('partsTable').style.display  = '';
+
+  parts.forEach((part, i) => {
+    const tr = document.createElement('tr');
+    tr.className            = 'va-parts-table-row';
+    tr.dataset.partid       = part.eq_sparepartid;
+    tr.dataset.searchtext   = (part.eq_partnumber + ' ' + part.eq_name).toLowerCase();
+    tr.innerHTML = `
+      <td style="font-size:11px; font-weight:700; color:var(--va-red); text-align:center;">${i+1}</td>
+      <td style="font-family:monospace; font-size:13px;">${part.eq_partnumber}</td>
+      <td>
+        <div style="font-weight:600; font-size:13px; color:var(--va-navy);">${part.eq_name}</div>
+        ${!part.eq_isavailable ? '<div style="font-size:11px; color:var(--va-red);">⚠ Contact sales for availability</div>' : ''}
+      </td>
+      <td style="font-weight:700; color:var(--va-navy); white-space:nowrap;">
+        ${part.eq_isavailable ? '€&nbsp;' + part.eq_price.toFixed(2) : '<em style="color:var(--va-text-light);font-weight:400;">On Request</em>'}
+      </td>
+      <td>
+        <button class="va-btn va-btn--primary va-btn--sm" title="Add to cart"
+                onclick="addPartToCart(event,'${part.eq_sparepartid}')">+</button>
+      </td>`;
+    tr.addEventListener('click', (e) => {
+      if (!e.target.closest('button')) {
+        if (part.eq_diagramposition)
+          showPartPopup(part, part.eq_diagramposition.x, part.eq_diagramposition.y);
+      }
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── Filter Parts ── */
+function filterParts(query) {
+  const q = query.toLowerCase();
+  const rows = document.querySelectorAll('.va-parts-table-row');
+  let visible = 0;
+  rows.forEach(row => {
+    const match = !q || row.dataset.searchtext.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('noPartsMsg').style.display = visible === 0 ? 'block' : 'none';
+}
+
+/* ── Cart ── */
+function addToCart() {
+  const popup = document.getElementById('partPopup');
+  if (popup._currentPart) addPartToCart(null, popup._currentPart.eq_sparepartid);
+}
+
+function addPartToCart(e, partId) {
+  if (e) e.stopPropagation();
+  const part = allParts.find(p => p.eq_sparepartid === partId);
+  if (!part || !part.eq_isavailable) return;
+  if (!cart.find(c => c.eq_sparepartid === partId)) {
+    cart.push(part);
+    updateCart();
+  }
+}
+
+function updateCart() {
+  const summary = document.getElementById('cartSummary');
+  const count   = document.getElementById('cartCount');
+  const items   = document.getElementById('cartItems');
+  count.textContent = cart.length;
+  summary.style.display = cart.length > 0 ? 'block' : 'none';
+  items.innerHTML = cart.map(p =>
+    `<div style="display:flex; justify-content:space-between;">
+       <span>${p.eq_name}</span>
+       <strong>€ ${p.eq_price.toFixed(2)}</strong>
+     </div>`
+  ).join('');
+  /* Build webshop URL with part codes */
+  const codes = cart.map(p => encodeURIComponent(p.eq_partnumber)).join(',');
+  document.getElementById('cartWebshopBtn').href = `/webshop?parts=${codes}`;
+}
+
+/* ── Reset ── */
+function resetPartsView() {
+  document.getElementById('partsViewerSection').style.display  = 'none';
+  document.getElementById('productPickerSection').style.display = 'block';
+  document.getElementById('spSerial').value = '';
+  currentProduct = null;
+  allParts = [];
+  cart = [];
+}
+</script>
+
+</body>
+</html>
+{% endif %}

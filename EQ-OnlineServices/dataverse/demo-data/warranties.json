@@ -1,0 +1,58 @@
+[
+  {
+    "eq_warrantyid": "33333333-3333-3333-3333-000000000001",
+    "eq_name": "TRX-2025-00001234 — TERRA NX 400 PMC SteelDrive",
+    "eq_serialnumber": "TRX-2025-00001234",
+    "eq_product_lookup": "11111111-1111-1111-1111-000000000001",
+    "eq_purchasedate": "2025-01-10",
+    "eq_warrantyexpirydate": "2027-01-10",
+    "eq_warrantystatus": 100000000,
+    "eq_warrantytype": 100000000,
+    "eq_dealercontact": "Austro Welding GmbH — Wien",
+    "eq_country": "Austria",
+    "eq_certificateurl": "https://cdn.voestalpine.com/eq/cert/TRX-2025-00001234.pdf",
+    "eq_notes": "Demo: Active warranty — 400+ days remaining. Use this serial number to show the green 'Warranty Active' result."
+  },
+  {
+    "eq_warrantyid": "33333333-3333-3333-3333-000000000002",
+    "eq_name": "UNX-2024-00005678 — URANOS NX 300 AC/DC",
+    "eq_serialnumber": "UNX-2024-00005678",
+    "eq_product_lookup": "11111111-1111-1111-1111-000000000004",
+    "eq_purchasedate": "2024-06-15",
+    "eq_warrantyexpirydate": "2026-06-15",
+    "eq_warrantystatus": 100000000,
+    "eq_warrantytype": 100000000,
+    "eq_dealercontact": "Schweiss-Technik Müller GmbH — München",
+    "eq_country": "Germany",
+    "eq_certificateurl": "https://cdn.voestalpine.com/eq/cert/UNX-2024-00005678.pdf",
+    "eq_notes": "Demo: Expiring soon (~27 days). Use this to show the near-expiry warning state."
+  },
+  {
+    "eq_warrantyid": "33333333-3333-3333-3333-000000000003",
+    "eq_name": "TRX-2023-00009999 — TERRA NX 270",
+    "eq_serialnumber": "TRX-2023-00009999",
+    "eq_product_lookup": "11111111-1111-1111-1111-000000000002",
+    "eq_purchasedate": "2023-03-01",
+    "eq_warrantyexpirydate": "2025-03-01",
+    "eq_warrantystatus": 100000001,
+    "eq_warrantytype": 100000000,
+    "eq_dealercontact": "Böhler Welding Italia S.r.l. — Milano",
+    "eq_country": "Italy",
+    "eq_certificateurl": "https://cdn.voestalpine.com/eq/cert/TRX-2023-00009999.pdf",
+    "eq_notes": "Demo: Expired warranty (March 2025). Use this to show the amber 'Warranty Expired' result."
+  },
+  {
+    "eq_warrantyid": "33333333-3333-3333-3333-000000000004",
+    "eq_name": "TRX-2024-00088800 — TERRA NX 500 CMT Pro",
+    "eq_serialnumber": "TRX-2024-00088800",
+    "eq_product_lookup": "11111111-1111-1111-1111-000000000003",
+    "eq_purchasedate": "2024-11-20",
+    "eq_warrantyexpirydate": "2027-11-20",
+    "eq_warrantystatus": 100000000,
+    "eq_warrantytype": 100000001,
+    "eq_dealercontact": "Industrial Welding Solutions SA — Lyon",
+    "eq_country": "France",
+    "eq_certificateurl": "https://cdn.voestalpine.com/eq/cert/TRX-2024-00088800.pdf",
+    "eq_notes": "Demo: Extended 36-month warranty. 550+ days remaining."
+  }
+]

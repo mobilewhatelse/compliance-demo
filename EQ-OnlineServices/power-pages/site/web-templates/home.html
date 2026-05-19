@@ -1,0 +1,253 @@
+{% comment %}
+  EQ Online Services — Home Page
+  Design: voestalpine Böhler Welding brand system
+  Access: Public (Level A) — all users
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EQ Online Services | voestalpine Böhler Welding</title>
+  <link rel="stylesheet" href="/eq-styles.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="va-header">
+  <div class="va-header__inner">
+    <div class="va-header__logo">
+      <img src="/images/voestalpine-logo-white.svg" alt="voestalpine Böhler Welding"/>
+      <div class="va-header__divider"></div>
+      <span class="va-header__brand">EQ Online Services</span>
+    </div>
+    <nav class="va-header__nav">
+      <a href="/" class="active">Products</a>
+      {% if user %}
+      <a href="/warranty/check">Warranty</a>
+      <a href="/service-tickets">Service Tickets</a>
+      <a href="/spare-parts">Spare Parts</a>
+      {% endif %}
+    </nav>
+    <div class="va-header__actions">
+      {% if user %}
+        <span class="va-header__user-name">{{ user.fullname }}</span>
+        <span class="va-header__role-badge">{{ user.roles | first }}</span>
+        <a href="/logout" class="va-btn va-btn--outline-white va-btn--sm">Logout</a>
+      {% else %}
+        <a href="/login"    class="va-btn va-btn--outline-white va-btn--sm">Login</a>
+        <a href="/register" class="va-btn va-btn--primary va-btn--sm">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<section class="va-hero">
+  <div class="va-hero__bg"></div>
+  <div class="va-container">
+    <div class="va-hero__content">
+      <div class="va-hero__eyebrow">EQ Online Services</div>
+      <h1 class="va-hero__title">One Single Touchpoint for All EQ Information</h1>
+      <p class="va-hero__subtitle">
+        Product documents, warranty management and service support — everything in one place, available 24/7.
+      </p>
+      <div class="va-hero__actions">
+        <a href="#products" class="va-btn va-btn--primary va-btn--lg">Browse Products</a>
+        {% if user == null %}
+        <a href="/register" class="va-btn va-btn--outline-white va-btn--lg">Register for Full Access</a>
+        {% else %}
+        <a href="/warranty/check" class="va-btn va-btn--outline-white va-btn--lg">Check Warranty</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ACCESS LEVEL TEASER (anonymous only) ══ -->
+{% if user == null %}
+<section style="background:var(--va-navy); padding:32px 0; border-top:3px solid var(--va-red);">
+  <div class="va-container">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:24px; text-align:center;">
+      {% assign levels = 'A — Public,B — Sales Partner,C — Service Partner,D — Integrator' | split: ',' %}
+      {% assign descs  = 'User Manuals · TDS · Brochures · Videos,+ Price Books · POD Guidelines · Initiatives,+ Service Manuals · Firmware · Warranty Tools,Public + Integrator Content' | split: ',' %}
+      {% for level in levels %}
+      <div style="padding:16px; border-top:3px solid {% if forloop.index == 1 %}var(--va-red){% else %}rgba(255,255,255,0.15){% endif %};">
+        <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--va-red); margin-bottom:6px;">Level {{ level }}</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.60);">{{ descs[forloop.index0] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center; margin-top:20px;">
+      <a href="/register" class="va-link" style="color:var(--va-white);">Register to unlock additional content</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ SEARCH ══ -->
+<div class="va-search-bar">
+  <div class="va-container">
+    {% if user %}
+    <form action="/products/search" method="get" class="va-search-form">
+      <input type="text" name="q" class="va-search-input"
+             placeholder="Search by product name or code — e.g. TERRA NX, 55.15.017"
+             aria-label="Search products"/>
+      <button type="submit" class="va-search-btn">Search</button>
+    </form>
+    {% else %}
+    <div class="va-search-locked">
+      <span>Search function available for registered users</span>
+      <a href="/register" class="va-btn va-btn--outline-white va-btn--sm">Register free</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══ PRODUCT LINE CATEGORIES ══ -->
+<section class="va-section va-section--gray">
+  <div class="va-container">
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Product Portfolio</div>
+      <h2 class="va-section-header__title">Browse by Product Line</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+    <div class="va-category-grid">
+      {% assign lines = entities['eq_product'] | where: 'eq_isactive', true | map: 'eq_productline' | uniq | sort %}
+      {% assign line_icons = 'TERRA:⚡,URANOS:🔵,WF NX:🔧,URANOS NX:🟦' | split: ',' %}
+      {% for line in lines %}
+      {% assign count = entities['eq_product'] | where: 'eq_productline', line | size %}
+      <a href="#products" class="va-category-card" onclick="filterByLine('{{ line }}')">
+        <div class="va-category-card__icon">🔌</div>
+        <div class="va-category-card__label">{{ line }}</div>
+        <div class="va-category-card__count">{{ count }} models</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCT GALLERY ══ -->
+<section class="va-section" id="products">
+  <div class="va-container">
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow">Equipment</div>
+      <h2 class="va-section-header__title">All Products</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+
+    <div class="va-product-grid" id="productGrid">
+      {% assign products = entities['eq_product'] | where: 'eq_isactive', true | sort: 'eq_sortorder' %}
+      {% for p in products %}
+      <a href="/products/{{ p.eq_productcode | url_encode }}"
+         class="va-product-card"
+         data-line="{{ p.eq_productline }}">
+        <div class="va-product-card__image">
+          <img src="{{ p.eq_imageurl | default: '/images/eq-placeholder.png' }}"
+               alt="{{ p.eq_name }}" loading="lazy"/>
+        </div>
+        <div class="va-product-card__body">
+          <div class="va-product-card__line">{{ p.eq_productline }}</div>
+          <div class="va-product-card__name">{{ p.eq_name }}</div>
+          <div class="va-product-card__code">{{ p.eq_productcode }}</div>
+          <span class="va-link va-product-card__cta">View Documents</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══ QUICK ACTIONS (authenticated users) ══ -->
+{% if user %}
+<section class="va-section va-section--navy">
+  <div class="va-container">
+    <div class="va-section-header">
+      <div class="va-section-header__eyebrow" style="color:var(--va-red);">Quick Actions</div>
+      <h2 class="va-section-header__title">Service Tools</h2>
+      <div class="va-section-header__line"></div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:2px;">
+
+      {% if user | has_role: 'ServicePartner' or user | has_role: 'Administrator' %}
+      <a href="/warranty/check" style="display:flex; flex-direction:column; background:rgba(255,255,255,0.05); padding:28px; border-top:3px solid var(--va-red); text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <span style="font-size:32px; margin-bottom:12px;">🔍</span>
+        <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--va-white); margin-bottom:6px;">Warranty Check</span>
+        <span style="font-size:13px; color:rgba(255,255,255,0.55);">Check warranty status by serial number</span>
+      </a>
+      <a href="/service-tickets/new" style="display:flex; flex-direction:column; background:rgba(255,255,255,0.05); padding:28px; border-top:3px solid #D97706; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <span style="font-size:32px; margin-bottom:12px;">🎫</span>
+        <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--va-white); margin-bottom:6px;">Open Service Ticket</span>
+        <span style="font-size:13px; color:rgba(255,255,255,0.55);">Report an issue or warranty claim</span>
+      </a>
+      {% endif %}
+
+      {% if user | has_role: 'SalesPartner' or user | has_role: 'ServicePartner' or user | has_role: 'Administrator' %}
+      <a href="/spare-parts" style="display:flex; flex-direction:column; background:rgba(255,255,255,0.05); padding:28px; border-top:3px solid #7C3AED; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <span style="font-size:32px; margin-bottom:12px;">🔧</span>
+        <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--va-white); margin-bottom:6px;">Spare Parts</span>
+        <span style="font-size:13px; color:rgba(255,255,255,0.55);">Find parts via exploded diagram</span>
+      </a>
+      {% endif %}
+
+      <a href="/my-workarea" style="display:flex; flex-direction:column; background:rgba(255,255,255,0.05); padding:28px; border-top:3px solid #059669; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.10)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <span style="font-size:32px; margin-bottom:12px;">📁</span>
+        <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--va-white); margin-bottom:6px;">My Work Area</span>
+        <span style="font-size:13px; color:rgba(255,255,255,0.55);">Personal document folder</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ FOOTER ══ -->
+<footer class="va-footer">
+  <div class="va-container">
+    <div class="va-footer__grid">
+      <div>
+        <div class="va-footer__brand">voestalpine Böhler Welding</div>
+        <div class="va-footer__tagline">Lasting Connections</div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Products</div>
+        <div class="va-footer__links">
+          <a href="/#products">All Products</a>
+          <a href="/#products">TERRA Series</a>
+          <a href="/#products">URANOS Series</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Support</div>
+        <div class="va-footer__links">
+          <a href="/warranty/check">Warranty Check</a>
+          <a href="/service-tickets">Service Tickets</a>
+          <a href="/spare-parts">Spare Parts</a>
+          <a href="/qa">Q&amp;A</a>
+        </div>
+      </div>
+      <div>
+        <div class="va-footer__heading">Company</div>
+        <div class="va-footer__links">
+          <a href="https://www.voestalpine.com/welding" target="_blank">voestalpine.com/welding</a>
+          <a href="/register">Partner Registration</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="va-footer__bar">
+      <span>© 2025 voestalpine Böhler Welding GmbH. All rights reserved.</span>
+      <span><span class="va-footer__red">ONE STEP AHEAD.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+function filterByLine(line) {
+  document.querySelectorAll('.va-product-card').forEach(card => {
+    card.style.display = (!line || card.dataset.line === line) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
